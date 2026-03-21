@@ -1,0 +1,3 @@
+[submodule "sleepfm-clinical"]
+	path = sleepfm-clinical
+	url = https://github.com/zou-group/sleepfm-clinical.git

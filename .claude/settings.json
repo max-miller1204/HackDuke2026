@@ -26,6 +26,8 @@
       }
     ]
   },
-  "plansDirectory": "./past-plans",
-  "enabledPlugins": {}
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
+  },
+  "plansDirectory": "./past-plans"
 }

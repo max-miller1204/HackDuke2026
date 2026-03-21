@@ -52,21 +52,6 @@ Executes a work-unit-structured spec (from `/spec_developer` or any planning too
 
 ---
 
-### `/audit` — Algorithm Auditor
-Audit the prediction engine's core algorithms for correctness risks, silent degradation, and maintenance hazards.
-
-**Usage:** `/audit` or "audit the prediction models"
-
-**4 Audit Phases:**
-1. **Stray Variables** — unused imports, dead assignments, disconnected pipeline stages
-2. **Hardcoded Bias** — magic numbers, duplicated constants (NAME_ALIASES, default volatility), undocumented scaling factors
-3. **Feature Usage** — composite weight summation, NaN propagation risk, graceful degradation paths
-4. **Model Consistency** — EVOptimizedSimulator vs QuantEnhancedSimulator `_win_prob()` diff, fallback equivalence, GARCH stationarity
-
-**Output:** Structured markdown report saved to `reports/audit_YYYY-MM-DD.md` with severity-rated findings (Critical/Warning/Info) and prioritized recommendations.
-
----
-
 ## Agents (used by Claude automatically or via subagent dispatch)
 
 ### `data-reviewer`
