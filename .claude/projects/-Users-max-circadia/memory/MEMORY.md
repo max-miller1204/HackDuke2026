@@ -1,0 +1,1 @@
+- [project_circadia.md](project_circadia.md) — Hackathon: SleepFM distillation for Jetson TK1 + breathing mini-game, team of 4
