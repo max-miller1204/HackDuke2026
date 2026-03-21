@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a '## Work Units' section",
+      "passed": true,
+      "evidence": "Line 40 has '## Work Units'."
+    },
+    {
+      "text": "Execution strategy is NOT 'Sequential'",
+      "passed": true,
+      "evidence": "Phase 2 labeled parallel with 3 scrapers in separate worktrees."
+    },
+    {
+      "text": "The 3 scraper scripts are assigned to separate parallel units",
+      "passed": true,
+      "evidence": "Units 2-4 each own one scraper, in parallel Phase 2."
+    },
+    {
+      "text": "No two parallel units share the same file",
+      "passed": true,
+      "evidence": "Each unit owns exclusive files."
+    },
+    {
+      "text": "requirements.txt is in the foundation unit",
+      "passed": true,
+      "evidence": "Unit 1 Foundation owns requirements.txt in Phase 1."
+    },
+    {
+      "text": "Runtime dependencies section addresses notebook dependency",
+      "passed": true,
+      "evidence": "Integration layer and Unit 5 description address notebook needing CSV outputs."
+    },
+    {
+      "text": "Post-merge verification section exists",
+      "passed": false,
+      "evidence": "No dedicated post-merge verification section with concrete E2E test commands."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 1,
+    "total": 7,
+    "pass_rate": 0.857
+  }
+}

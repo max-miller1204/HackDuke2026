@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a '## Work Units' section",
+      "passed": true,
+      "evidence": "Line 35 contains '## Work Units'."
+    },
+    {
+      "text": "Execution strategy is 'Sequential' (single worker)",
+      "passed": true,
+      "evidence": "Execution plan is strictly sequential. 'No parallelism is possible for this spec.'"
+    },
+    {
+      "text": "Runtime/import dependency explicitly identified",
+      "passed": true,
+      "evidence": "Unit 2 'imports PublicOwnership and EVOptimizedSimulator from quant_models'."
+    },
+    {
+      "text": "Does NOT recommend parallel worktrees",
+      "passed": true,
+      "evidence": "'Running them in separate worktrees would cause import failures'."
+    },
+    {
+      "text": "Dependency analysis mentions notebook cannot run without classes",
+      "passed": true,
+      "evidence": "'Unit 1 must fully complete before Unit 2 begins, because Unit 2 imports symbols that Unit 1 creates.'"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

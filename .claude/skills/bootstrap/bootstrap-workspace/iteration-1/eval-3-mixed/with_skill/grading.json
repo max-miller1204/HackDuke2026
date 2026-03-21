@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a '## Work Units' section",
+      "passed": true,
+      "evidence": "Work Units section present."
+    },
+    {
+      "text": "Project scaffold and shared types are in foundation",
+      "passed": true,
+      "evidence": "Foundation includes monorepo scaffold and shared types."
+    },
+    {
+      "text": "Database schema (Prisma) is in foundation",
+      "passed": true,
+      "evidence": "Prisma schema included in foundation phase."
+    },
+    {
+      "text": "Auth middleware is in foundation or sequential before routes",
+      "passed": true,
+      "evidence": "Auth middleware is in the foundation phase."
+    },
+    {
+      "text": "Frontend components in parallel units",
+      "passed": true,
+      "evidence": "Frontend UI is a separate parallel unit."
+    },
+    {
+      "text": "Backend routes NOT parallel with unbuilt auth middleware",
+      "passed": true,
+      "evidence": "Backend routes depend only on foundation (where auth lives)."
+    },
+    {
+      "text": "api.ts dependency on types/ noted",
+      "passed": true,
+      "evidence": "Frontend unit notes dependency on types/ from foundation."
+    },
+    {
+      "text": "Dependency analysis identifies backend route dependencies",
+      "passed": true,
+      "evidence": "Analysis identifies routes import from types/ and use auth middleware."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

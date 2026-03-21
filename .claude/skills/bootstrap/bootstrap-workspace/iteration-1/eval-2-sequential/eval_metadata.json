@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "sequential-import-dependency",
+  "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-sequential.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.",
+  "assertions": [
+    "Output contains a '## Work Units' section",
+    "Execution strategy is 'Sequential' (single worker) — NOT 'Foundation → Parallel'",
+    "The runtime/import dependency is explicitly identified: notebook imports PublicOwnership and EVOptimizedSimulator from quant_models.py",
+    "Does NOT recommend parallel worktrees for these two units",
+    "Dependency analysis section mentions that the notebook cannot run without the classes existing first"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "parallelizable-scrapers",
+  "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-parallelizable.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.",
+  "assertions": [
+    "Output contains a '## Work Units' section",
+    "Execution strategy is NOT 'Sequential' — the 3 scrapers are independent",
+    "The 3 scraper scripts are assigned to separate parallel units",
+    "No two parallel units share the same file",
+    "requirements.txt is in the foundation unit, not a parallel unit",
+    "Runtime dependencies section exists and addresses the notebook's dependency on the scrapers' CSV output",
+    "A post-merge verification section exists with an E2E test recipe"
+  ]
+}

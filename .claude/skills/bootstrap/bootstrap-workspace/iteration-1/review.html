@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "spec_developer-work-units", "runs": [{"id": "eval-1-parallelizable-with_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-parallelizable.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 1, "outputs": [{"name": "spec-parallelizable-with-units.md", "type": "text", "content": "# Spec: Multi-Source Data Pipeline\n\n## Context\nBuild a data pipeline that scrapes three independent data sources, processes each into CSVs, and produces a combined analysis notebook.\n\n## Deliverables\n\n1. **`scripts/scrape_source_a.py`** \u2014 Scraper for source A, outputs `scraped_data/source_a.csv`\n2. **`scripts/scrape_source_b.py`** \u2014 Scraper for source B, outputs `scraped_data/source_b.csv`\n3. **`scripts/scrape_source_c.py`** \u2014 Scraper for source C, outputs `scraped_data/source_c.csv`\n4. **`analysis.ipynb`** \u2014 Notebook that loads all 3 CSVs and produces combined analysis\n5. **`requirements.txt`** \u2014 Add `requests`, `beautifulsoup4`, `pandas`\n\n## Implementation Details\n\n### Source A Scraper\n- Fetch from example.com/api/a\n- Parse JSON response into DataFrame\n- Output columns: id, name, value, timestamp\n\n### Source B Scraper\n- Fetch from example.com/api/b\n- Parse HTML table with BeautifulSoup\n- Output columns: id, category, score\n\n### Source C Scraper\n- Fetch from example.com/api/c\n- Parse CSV download link\n- Output columns: id, region, metric, date\n\n### Analysis Notebook\n- Load all 3 CSVs\n- Merge on `id` column\n- Produce summary statistics and visualizations\n\n## Verification\n1. Each scraper runs independently: `python scripts/scrape_source_X.py`\n2. Notebook runs end-to-end after all CSVs exist\n\n---\n\n## Work Units\n\n### Execution Strategy\nFoundation \u2192 Mixed (parallel + sequential)\n\n**Rationale:** The three scrapers are fully independent \u2014 they each own exclusive files, share no imports between them, and produce separate CSV outputs. However, `analysis.ipynb` has a runtime dependency on all three scrapers' CSV output files (`scraped_data/source_a.csv`, `scraped_data/source_b.csv`, `scraped_data/source_c.csv`), so it must run after the scrapers complete. The `requirements.txt` is shared infrastructure needed by all units and belongs in the foundation phase.\n\n### Foundation Unit (Phase 1)\n\n**Files:**\n- Modify: `requirements.txt`\n- Create: `scripts/` (directory scaffold)\n- Create: `scraped_data/` (directory scaffold)\n\n**Tasks:**\n- Add `requests`, `beautifulsoup4`, and `pandas` to `requirements.txt`\n- Ensure `scripts/` and `scraped_data/` directories exist\n\n**Done when:** `requirements.txt` contains all three dependencies and both directories exist.\n\n### Parallel Units (Phase 2)\n\n| # | Unit Name | Files (create/modify) | Description | E2E Test |\n|---|-----------|----------------------|-------------|----------|\n| 1 | Source A Scraper | Create: `scripts/scrape_source_a.py`, `scraped_data/source_a.csv` (output) | Fetch JSON from example.com/api/a, parse into DataFrame, write CSV with columns: id, name, value, timestamp | `python scripts/scrape_source_a.py` produces valid `scraped_data/source_a.csv` |\n| 2 | Source B Scraper | Create: `scripts/scrape_source_b.py`, `scraped_data/source_b.csv` (output) | Fetch HTML from example.com/api/b, parse table with BeautifulSoup, write CSV with columns: id, category, score | `python scripts/scrape_source_b.py` produces valid `scraped_data/source_b.csv` |\n| 3 | Source C Scraper | Create: `scripts/scrape_source_c.py`, `scraped_data/source_c.csv` (output) | Fetch CSV download link from example.com/api/c, parse and write CSV with columns: id, region, metric, date | `python scripts/scrape_source_c.py` produces valid `scraped_data/source_c.csv` |\n\n### Sequential Units\n\n| Order | Unit Name | Files (create/modify) | Depends On | Description |\n|-------|-----------|----------------------|------------|-------------|\n| 1 | Analysis Notebook | Create: `analysis.ipynb` | Phase 2 Units 1-3 (reads `scraped_data/source_a.csv`, `scraped_data/source_b.csv`, `scraped_data/source_c.csv`) | Load all 3 CSVs, merge on `id` column, produce summary statistics and visualizations |\n\n### Dependency & Conflict Analysis\n- **File conflicts:** None. Each parallel unit owns exclusive script and CSV files. No file is touched by more than one unit. `requirements.txt` is isolated in the foundation phase.\n- **Runtime dependencies:** `analysis.ipynb` reads the CSV files produced by all three scrapers. It cannot execute until all three scraper units have completed and their output CSVs exist. The three scrapers have no runtime or import dependencies on each other \u2014 they are independently executable.\n\n### Post-Merge Verification\n1. Install dependencies: `pip install -r requirements.txt`\n2. Run all three scrapers: `python scripts/scrape_source_a.py && python scripts/scrape_source_b.py && python scripts/scrape_source_c.py`\n3. Verify all CSVs exist with expected columns in `scraped_data/`\n4. Run `analysis.ipynb` end-to-end and confirm it produces summary statistics and visualizations from the merged data\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Line 42 contains '## Work Units' as a level-2 heading."}, {"text": "Execution strategy is NOT 'Sequential'", "passed": true, "evidence": "States 'Foundation \u2192 Mixed (parallel + sequential)'."}, {"text": "The 3 scraper scripts are assigned to separate parallel units", "passed": true, "evidence": "Three separate units: Source A, B, C Scraper in parallel table."}, {"text": "No two parallel units share the same file", "passed": true, "evidence": "Each unit owns exclusive script + CSV files."}, {"text": "requirements.txt is in the foundation unit", "passed": true, "evidence": "'Modify: requirements.txt' under Foundation Unit (Phase 1)."}, {"text": "Runtime dependencies section addresses notebook dependency", "passed": true, "evidence": "Dependency Analysis states notebook reads CSVs from all three scrapers."}, {"text": "Post-merge verification section exists", "passed": true, "evidence": "4-step E2E recipe: install deps, run scrapers, verify CSVs, run notebook."}], "summary": {"passed": 7, "failed": 0, "total": 7, "pass_rate": 1.0}}}, {"id": "eval-1-parallelizable-without_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-parallelizable.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 1, "outputs": [{"name": "spec-parallelizable-with-units.md", "type": "text", "content": "# Spec: Multi-Source Data Pipeline\n\n## Context\nBuild a data pipeline that scrapes three independent data sources, processes each into CSVs, and produces a combined analysis notebook.\n\n## Deliverables\n\n1. **`scripts/scrape_source_a.py`** \u2014 Scraper for source A, outputs `scraped_data/source_a.csv`\n2. **`scripts/scrape_source_b.py`** \u2014 Scraper for source B, outputs `scraped_data/source_b.csv`\n3. **`scripts/scrape_source_c.py`** \u2014 Scraper for source C, outputs `scraped_data/source_c.csv`\n4. **`analysis.ipynb`** \u2014 Notebook that loads all 3 CSVs and produces combined analysis\n5. **`requirements.txt`** \u2014 Add `requests`, `beautifulsoup4`, `pandas`\n\n## Implementation Details\n\n### Source A Scraper\n- Fetch from example.com/api/a\n- Parse JSON response into DataFrame\n- Output columns: id, name, value, timestamp\n\n### Source B Scraper\n- Fetch from example.com/api/b\n- Parse HTML table with BeautifulSoup\n- Output columns: id, category, score\n\n### Source C Scraper\n- Fetch from example.com/api/c\n- Parse CSV download link\n- Output columns: id, region, metric, date\n\n### Analysis Notebook\n- Load all 3 CSVs\n- Merge on `id` column\n- Produce summary statistics and visualizations\n\n## Verification\n1. Each scraper runs independently: `python scripts/scrape_source_X.py`\n2. Notebook runs end-to-end after all CSVs exist\n\n## Work Units\n\n### Dependency Analysis\n\nThe project has a two-layer dependency structure:\n\n- **Layer 1 (Foundation):** `requirements.txt` must exist before any scraper or the notebook can run, since all Python code depends on the declared packages. This is a single shared file, so it must be completed first and merged into the base branch before parallel work begins.\n- **Layer 2 (Parallel scrapers):** The three scrapers are fully independent of each other. Each owns its own script file and its own output CSV. They share no code and have no cross-dependencies.\n- **Layer 3 (Integration):** The analysis notebook depends on all three scrapers having produced their CSV outputs. It cannot be fully verified until the scrapers are merged, but it can be authored in parallel as long as it assumes the CSV schemas defined in the spec.\n\n### Unit 1 \u2014 Foundation: Requirements (must complete first)\n\n| Attribute | Value |\n|-----------|-------|\n| **Files owned** | `requirements.txt` |\n| **Depends on** | Nothing |\n| **Blocked by** | Nothing |\n| **Blocks** | Units 2, 3, 4, 5 (all downstream units need packages installed) |\n\n**Scope:** Add `requests`, `beautifulsoup4`, and `pandas` to `requirements.txt`. This unit must be merged into the base branch before the parallel units begin, so that each worktree can install dependencies.\n\n### Unit 2 \u2014 Scraper A\n\n| Attribute | Value |\n|-----------|-------|\n| **Files owned** | `scripts/scrape_source_a.py`, `scraped_data/source_a.csv` |\n| **Depends on** | Unit 1 (requirements) |\n| **Blocks** | Unit 5 (analysis notebook needs `source_a.csv`) |\n\n**Scope:** Implement the Source A scraper. Fetch JSON from example.com/api/a, parse into a DataFrame, and write to `scraped_data/source_a.csv` with columns: id, name, value, timestamp.\n\n### Unit 3 \u2014 Scraper B\n\n| Attribute | Value |\n|-----------|-------|\n| **Files owned** | `scripts/scrape_source_b.py`, `scraped_data/source_b.csv` |\n| **Depends on** | Unit 1 (requirements) |\n| **Blocks** | Unit 5 (analysis notebook needs `source_b.csv`) |\n\n**Scope:** Implement the Source B scraper. Fetch HTML from example.com/api/b, parse the table with BeautifulSoup, and write to `scraped_data/source_b.csv` with columns: id, category, score.\n\n### Unit 4 \u2014 Scraper C\n\n| Attribute | Value |\n|-----------|-------|\n| **Files owned** | `scripts/scrape_source_c.py`, `scraped_data/source_c.csv` |\n| **Depends on** | Unit 1 (requirements) |\n| **Blocks** | Unit 5 (analysis notebook needs `source_c.csv`) |\n\n**Scope:** Implement the Source C scraper. Fetch from example.com/api/c, follow the CSV download link, and write to `scraped_data/source_c.csv` with columns: id, region, metric, date.\n\n### Unit 5 \u2014 Analysis Notebook\n\n| Attribute | Value |\n|-----------|-------|\n| **Files owned** | `analysis.ipynb` |\n| **Depends on** | Units 2, 3, 4 (needs all three CSVs to verify end-to-end) |\n| **Blocks** | Nothing |\n\n**Scope:** Create the Jupyter notebook that loads all three CSVs, merges them on the `id` column, and produces summary statistics and visualizations. This unit can be coded in parallel with the scrapers by assuming the CSV schemas from the spec, but final verification requires all scrapers to be merged first.\n\n### Execution Plan\n\n```\nTimeline:\n  Phase 1 (sequential):  Unit 1 \u2014 requirements.txt\n                              |\n                         merge to base\n                              |\n  Phase 2 (parallel):    Unit 2 \u2500\u2500\u2510\n                         Unit 3 \u2500\u2500\u253c\u2500\u2500 (all run in separate worktrees)\n                         Unit 4 \u2500\u2500\u2524\n                         Unit 5 \u2500\u2500\u2518\n                              |\n  Phase 3 (sequential):  merge all, verify notebook end-to-end\n```\n\n- **Maximum parallelism:** 4 worktrees in Phase 2 (3 scrapers + notebook).\n- **No file conflicts:** Every unit owns exclusive files, so merges will be conflict-free.\n- **Unit 5 caveat:** The notebook can be written during Phase 2 since it only reads CSVs at runtime, not at merge time. However, its verification step (running the notebook end-to-end) must wait until after Units 2-4 are merged and their scrapers have been executed to produce the CSV files.\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Line 40 has '## Work Units'."}, {"text": "Execution strategy is NOT 'Sequential'", "passed": true, "evidence": "Phase 2 labeled parallel with 3 scrapers in separate worktrees."}, {"text": "The 3 scraper scripts are assigned to separate parallel units", "passed": true, "evidence": "Units 2-4 each own one scraper, in parallel Phase 2."}, {"text": "No two parallel units share the same file", "passed": true, "evidence": "Each unit owns exclusive files."}, {"text": "requirements.txt is in the foundation unit", "passed": true, "evidence": "Unit 1 Foundation owns requirements.txt in Phase 1."}, {"text": "Runtime dependencies section addresses notebook dependency", "passed": true, "evidence": "Integration layer and Unit 5 description address notebook needing CSV outputs."}, {"text": "Post-merge verification section exists", "passed": false, "evidence": "No dedicated post-merge verification section with concrete E2E test commands."}], "summary": {"passed": 6, "failed": 1, "total": 7, "pass_rate": 0.857}}}, {"id": "eval-2-sequential-with_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-sequential.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 2, "outputs": [{"name": "spec-sequential-with-units.md", "type": "text", "content": "# Spec: EV-Optimized Bracket Extension\n\n## Context\nAdd an unconstrained EV-optimized bracket section to the existing notebook. This adds new classes to the existing quant_models.py module and new cells to the notebook that import and use those classes.\n\n## Deliverables\n\n1. **`scripts/quant_models.py`** (modify) \u2014 Add `PublicOwnership` class (~40 lines) and `EVOptimizedSimulator` class (~200 lines)\n2. **`final_four_analysis.ipynb`** (modify) \u2014 Update import cell, add 9 new cells as Section 10 that instantiate and run `EVOptimizedSimulator`\n\n## Implementation Details\n\n### PublicOwnership class (in quant_models.py)\n- Hardcoded ESPN-calibrated ownership table by (seed, round)\n- `get_ownership(seed, round_index)` method\n- Insert after existing `HistoricalPrior` class\n\n### EVOptimizedSimulator class (in quant_models.py)\n- Constructor takes bracket_df, kenpom_df, garch, hmm, kalman, public_ownership\n- `_win_prob_no_prior()` \u2014 copy of existing `_win_prob` without prior blending\n- `run()` \u2014 3-phase: simulate 50K brackets, compute per-slot EV, leverage-weighted picks\n- Returns bracket_picks, ev_scores, leverage_data, champion, ff_probs\n\n### Notebook Section 10 (in final_four_analysis.ipynb)\n- Cell 1: Import `PublicOwnership, EVOptimizedSimulator` from quant_models\n- Cell 2: Setup with configurable LEVERAGE_WEIGHT\n- Cell 3: Run EV simulation\n- Cells 4-9: Display results, comparisons, visualizations\n\n## Verification\n1. Run full notebook end-to-end\n2. New section produces 63-game bracket with EV scores\n3. Changing LEVERAGE_WEIGHT shifts picks\n\n---\n\n## Work Units\n\n### Execution Strategy\nSequential (single worker)\n\n**Rationale:** The notebook (`final_four_analysis.ipynb`) directly imports `PublicOwnership` and `EVOptimizedSimulator` from `scripts/quant_models.py`. This is a hard runtime/import dependency \u2014 the notebook cells cannot execute, be tested, or even parse correctly without the classes existing in quant_models.py first. Since there are only two deliverables and one depends on the other, parallel execution provides no benefit. A single worker executing sequentially is the correct strategy.\n\n### Sequential Units\n\n| Order | Unit Name | Files (create/modify) | Depends On | Description |\n|-------|-----------|----------------------|------------|-------------|\n| 1 | Quant Models Extension | Modify: `scripts/quant_models.py` | Foundation (existing codebase) | Add `PublicOwnership` class with ESPN-calibrated ownership table and `get_ownership()` method. Add `EVOptimizedSimulator` class with constructor, `_win_prob_no_prior()`, and `run()` method implementing 3-phase EV simulation. Insert both after existing `HistoricalPrior` class. |\n| 2 | Notebook EV Section | Modify: `final_four_analysis.ipynb` | Unit 1 (imports `PublicOwnership`, `EVOptimizedSimulator` from `quant_models`) | Update the existing import cell to include new classes. Add 9 new cells as Section 10: instantiation, EV simulation execution, results display, comparisons, and visualizations. |\n\n### Dependency & Conflict Analysis\n- **File conflicts:** None \u2014 each unit modifies exactly one file (`scripts/quant_models.py` and `final_four_analysis.ipynb` respectively), with no overlap.\n- **Runtime dependencies:** Unit 2 imports `PublicOwnership` and `EVOptimizedSimulator` from `scripts/quant_models.py`, which are created by Unit 1. Unit 2 cannot be executed or tested until Unit 1 is complete. This is a hard import dependency that prevents parallel execution.\n\n### Post-Merge Verification\nRun the full notebook end-to-end (`jupyter nbconvert --execute final_four_analysis.ipynb` or run all cells interactively). Verify that:\n1. Section 10 executes without import errors\n2. A 63-game bracket with EV scores is produced\n3. Changing `LEVERAGE_WEIGHT` in the setup cell and re-running produces different pick selections\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Line 37 contains '## Work Units'."}, {"text": "Execution strategy is 'Sequential' (single worker)", "passed": true, "evidence": "Line 40: 'Sequential (single worker)'."}, {"text": "Runtime/import dependency explicitly identified", "passed": true, "evidence": "Names PublicOwnership and EVOptimizedSimulator imports as 'hard runtime/import dependency'."}, {"text": "Does NOT recommend parallel worktrees", "passed": true, "evidence": "No parallel units section; uses sequential table only."}, {"text": "Dependency analysis mentions notebook cannot run without classes", "passed": true, "evidence": "'cannot execute, be tested, or even parse correctly without the classes existing'."}], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}}, {"id": "eval-2-sequential-without_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-sequential.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 2, "outputs": [{"name": "spec-sequential-with-units.md", "type": "text", "content": "# Spec: EV-Optimized Bracket Extension\n\n## Context\nAdd an unconstrained EV-optimized bracket section to the existing notebook. This adds new classes to the existing quant_models.py module and new cells to the notebook that import and use those classes.\n\n## Deliverables\n\n1. **`scripts/quant_models.py`** (modify) \u2014 Add `PublicOwnership` class (~40 lines) and `EVOptimizedSimulator` class (~200 lines)\n2. **`final_four_analysis.ipynb`** (modify) \u2014 Update import cell, add 9 new cells as Section 10 that instantiate and run `EVOptimizedSimulator`\n\n## Implementation Details\n\n### PublicOwnership class (in quant_models.py)\n- Hardcoded ESPN-calibrated ownership table by (seed, round)\n- `get_ownership(seed, round_index)` method\n- Insert after existing `HistoricalPrior` class\n\n### EVOptimizedSimulator class (in quant_models.py)\n- Constructor takes bracket_df, kenpom_df, garch, hmm, kalman, public_ownership\n- `_win_prob_no_prior()` \u2014 copy of existing `_win_prob` without prior blending\n- `run()` \u2014 3-phase: simulate 50K brackets, compute per-slot EV, leverage-weighted picks\n- Returns bracket_picks, ev_scores, leverage_data, champion, ff_probs\n\n### Notebook Section 10 (in final_four_analysis.ipynb)\n- Cell 1: Import `PublicOwnership, EVOptimizedSimulator` from quant_models\n- Cell 2: Setup with configurable LEVERAGE_WEIGHT\n- Cell 3: Run EV simulation\n- Cells 4-9: Display results, comparisons, visualizations\n\n## Verification\n1. Run full notebook end-to-end\n2. New section produces 63-game bracket with EV scores\n3. Changing LEVERAGE_WEIGHT shifts picks\n\n## Work Units\n\n### Dependency Analysis\n\nThe spec modifies two files: `scripts/quant_models.py` and `final_four_analysis.ipynb`. The notebook cells import and call the classes defined in the Python module, creating a strict dependency: the Python module changes must land first.\n\nWithin `quant_models.py`, `EVOptimizedSimulator` takes a `public_ownership` instance in its constructor, so `PublicOwnership` must exist before `EVOptimizedSimulator` can be used. However, both classes can be written in the same file simultaneously since the dependency is at instantiation time, not at Python definition time.\n\n### Unit 1 \u2014 Foundation: Python Classes (scripts/quant_models.py)\n\n**Must complete before Unit 2.**\n\n| Attribute | Detail |\n|---|---|\n| Files owned | `scripts/quant_models.py` |\n| Scope | Add `PublicOwnership` class after `HistoricalPrior`; add `EVOptimizedSimulator` class after `PublicOwnership` |\n| Estimated size | ~240 lines of new code |\n| Dependencies | None \u2014 builds on classes already in the file (`HistoricalPrior`, `QuantEnhancedSimulator`) |\n| Done when | Both classes are defined, importable, and pass a smoke import test (`from scripts.quant_models import PublicOwnership, EVOptimizedSimulator`) |\n\nKey implementation notes:\n- `PublicOwnership` is self-contained (hardcoded data + one method). No external dependencies.\n- `EVOptimizedSimulator` references the existing `_win_prob` pattern from `QuantEnhancedSimulator` for its `_win_prob_no_prior` method. Read that method before writing.\n- Insert both classes between `HistoricalPrior` and the existing `QuantEnhancedSimulator` class to keep logical ordering.\n\n### Unit 2 \u2014 Parallel-ready after Unit 1: Notebook Section 10 (final_four_analysis.ipynb)\n\n**Depends on Unit 1 being complete.**\n\n| Attribute | Detail |\n|---|---|\n| Files owned | `final_four_analysis.ipynb` |\n| Scope | Update existing import cell to include new classes; append 9 new cells as Section 10 |\n| Estimated size | 9 new cells (mix of code and markdown) |\n| Dependencies | Unit 1 (imports `PublicOwnership` and `EVOptimizedSimulator` from `quant_models`) |\n| Done when | Notebook runs end-to-end; Section 10 produces a 63-game bracket with EV scores; varying `LEVERAGE_WEIGHT` changes output picks |\n\nKey implementation notes:\n- Cell 1 modifies an existing import cell \u2014 coordinate carefully to avoid merge conflicts with any other notebook changes.\n- Cells 4-9 are display/visualization cells with no cross-dependencies and could theoretically be authored in any order.\n- The notebook also depends on runtime artifacts from earlier cells (bracket_df, kenpom_df, fitted GARCH/HMM/Kalman objects), so end-to-end verification requires running the full notebook.\n\n### Execution Plan\n\n```\nUnit 1 (quant_models.py)\n        |\n        v\nUnit 2 (final_four_analysis.ipynb)\n```\n\nThere are only two files and a strict sequential dependency between them, so **no parallelism is possible for this spec**. Unit 1 must fully complete before Unit 2 begins, because Unit 2 imports symbols that Unit 1 creates. Running them in separate worktrees would cause import failures during development of Unit 2.\n\nIf the scope were larger (e.g., multiple independent Python modules or independent notebook sections), units could run in parallel. Here, the minimal decomposition is two sequential units with exclusive file ownership.\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Line 35 contains '## Work Units'."}, {"text": "Execution strategy is 'Sequential' (single worker)", "passed": true, "evidence": "Execution plan is strictly sequential. 'No parallelism is possible for this spec.'"}, {"text": "Runtime/import dependency explicitly identified", "passed": true, "evidence": "Unit 2 'imports PublicOwnership and EVOptimizedSimulator from quant_models'."}, {"text": "Does NOT recommend parallel worktrees", "passed": true, "evidence": "'Running them in separate worktrees would cause import failures'."}, {"text": "Dependency analysis mentions notebook cannot run without classes", "passed": true, "evidence": "'Unit 1 must fully complete before Unit 2 begins, because Unit 2 imports symbols that Unit 1 creates.'"}], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}}, {"id": "eval-3-mixed-with_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-mixed.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 3, "outputs": [{"name": "spec-mixed-with-units.md", "type": "text", "content": "# Spec: Full-Stack Task Manager\n\n## Context\nBuild a task management web app from scratch with a Next.js frontend, Express API backend, and PostgreSQL database. Greenfield project.\n\n## Tech Stack\n- Frontend: Next.js 14, TypeScript, Tailwind CSS\n- Backend: Express.js, TypeScript\n- Database: PostgreSQL with Prisma ORM\n- Auth: JWT-based authentication\n\n## Deliverables\n\n1. **Project scaffold** \u2014 monorepo with `frontend/` and `backend/` directories, shared `types/` package\n2. **`types/index.ts`** \u2014 Shared TypeScript interfaces: Task, User, ApiResponse\n3. **`backend/prisma/schema.prisma`** \u2014 Database schema for users and tasks tables\n4. **`backend/src/middleware/auth.ts`** \u2014 JWT auth middleware\n5. **`backend/src/routes/tasks.ts`** \u2014 CRUD API endpoints for tasks (imports from types/ and uses auth middleware)\n6. **`backend/src/routes/auth.ts`** \u2014 Login/register endpoints (imports from types/, uses Prisma)\n7. **`frontend/src/components/TaskList.tsx`** \u2014 Task list component with CRUD operations\n8. **`frontend/src/components/TaskForm.tsx`** \u2014 Create/edit task form\n9. **`frontend/src/components/AuthForm.tsx`** \u2014 Login/register form\n10. **`frontend/src/lib/api.ts`** \u2014 API client (imports types from types/)\n\n## Implementation Details\n\n### Shared Types\n```typescript\ninterface Task { id: string; title: string; status: 'todo' | 'in_progress' | 'done'; userId: string; }\ninterface User { id: string; email: string; name: string; }\ninterface ApiResponse<T> { data: T; error?: string; }\n```\n\n### Database Schema\n- Users table: id, email, password_hash, name, created_at\n- Tasks table: id, title, description, status, user_id (FK), created_at, updated_at\n\n### Auth Middleware\n- Verify JWT from Authorization header\n- Attach user to request object\n- 401 on invalid/missing token\n\n### API Endpoints\n- POST /auth/register, POST /auth/login\n- GET /tasks, POST /tasks, PUT /tasks/:id, DELETE /tasks/:id (all require auth)\n\n### Frontend Components\n- TaskList: fetches tasks, displays in list, supports status toggle and delete\n- TaskForm: controlled form for creating/editing tasks\n- AuthForm: login/register with email + password\n\n## Verification\n1. `npm install` in both frontend/ and backend/\n2. `npx prisma generate` succeeds\n3. Backend starts and responds to health check\n4. Frontend builds without TypeScript errors\n5. Auth flow works end-to-end\n\n---\n\n## Work Units\n\n### Execution Strategy\nFoundation \u2192 Parallel (concurrent worktrees)\n\n**Rationale:** The project has clear foundation work (scaffold, shared types, Prisma schema, auth middleware) that multiple deliverables depend on. Once foundation is in place, the remaining work splits into three units with no file overlaps and no runtime/import dependencies between them. Backend task routes and backend auth routes do not import from each other. Frontend components communicate with the backend via HTTP at runtime, not via direct imports, so they are independent of backend route code. All three parallel units depend only on foundation outputs (shared types, Prisma client, auth middleware).\n\n### Foundation Unit (Phase 1)\n\n**Files:**\n- Create: `package.json` (root monorepo config)\n- Create: `types/index.ts`\n- Create: `types/package.json`\n- Create: `backend/package.json`\n- Create: `backend/tsconfig.json`\n- Create: `backend/prisma/schema.prisma`\n- Create: `backend/src/middleware/auth.ts`\n- Create: `backend/src/index.ts` (Express app entry point with health check)\n- Create: `frontend/package.json`\n- Create: `frontend/tsconfig.json`\n\n**Tasks:**\n- Initialize monorepo with root `package.json` and workspace configuration for `types/`, `backend/`, and `frontend/`\n- Create shared `types/index.ts` with Task, User, and ApiResponse interfaces\n- Create Prisma schema with Users and Tasks tables, including the user_id foreign key relationship\n- Implement JWT auth middleware that verifies tokens from the Authorization header, attaches user to the request, and returns 401 on invalid/missing tokens\n- Set up Express app entry point with health check endpoint\n- Set up Next.js project scaffold in `frontend/` with TypeScript and Tailwind CSS configured\n\n**Done when:**\n- `npm install` succeeds at the root (workspaces resolve)\n- `npx prisma generate` succeeds in `backend/`\n- `types/index.ts` exports Task, User, and ApiResponse interfaces\n- `backend/src/middleware/auth.ts` exports a working auth middleware function\n- TypeScript compilation passes for `types/` and `backend/` packages\n\n### Parallel Units (Phase 2)\n\n| # | Unit Name | Files (create/modify) | Description | E2E Test |\n|---|-----------|----------------------|-------------|----------|\n| 1 | Backend Task Routes | Create: `backend/src/routes/tasks.ts` | CRUD endpoints for tasks (GET, POST, PUT, DELETE /tasks) protected by auth middleware. Imports types from `types/` and uses Prisma client for DB operations. | `curl` against each task endpoint with a valid JWT returns correct responses; unauthorized requests return 401 |\n| 2 | Backend Auth Routes | Create: `backend/src/routes/auth.ts` | Register and login endpoints. Hashes passwords, creates users via Prisma, issues JWTs on successful login. Imports types from `types/`. | POST /auth/register creates a user; POST /auth/login with valid credentials returns a JWT |\n| 3 | Frontend UI | Create: `frontend/src/lib/api.ts`, Create: `frontend/src/components/TaskList.tsx`, Create: `frontend/src/components/TaskForm.tsx`, Create: `frontend/src/components/AuthForm.tsx` | API client that wraps fetch calls and imports shared types. Three React components: TaskList (list/toggle/delete), TaskForm (create/edit), AuthForm (login/register). | `next build` succeeds with no TypeScript errors; components render without runtime errors |\n\n### Dependency & Conflict Analysis\n- **File conflicts:** No file is touched by more than one unit. Foundation owns all shared infrastructure files (types, Prisma schema, auth middleware, scaffolding). Each parallel unit creates its own exclusive files. The two backend route files (`tasks.ts` and `auth.ts`) are in separate units. All four frontend files are grouped in a single unit to avoid splitting the API client from the components that import it.\n- **Runtime dependencies:** None between parallel units. Backend task routes and backend auth routes do not import from each other (both independently import from `types/` and use Prisma, which are established in foundation). Frontend components import from `frontend/src/lib/api.ts` which is co-located in the same unit. Frontend communicates with backend via HTTP calls, not code imports, so there is no build-time dependency between the frontend unit and the backend route units.\n\n### Post-Merge Verification\n1. Run `npm install` at the monorepo root \u2014 all workspaces resolve without errors\n2. Run `npx prisma generate` in `backend/` \u2014 Prisma client generates successfully\n3. Start the backend server \u2014 health check endpoint responds at GET /health\n4. Register a new user via POST /auth/register \u2014 returns success with user data\n5. Login via POST /auth/login \u2014 returns a valid JWT\n6. Use the JWT to create, list, update, and delete tasks via the /tasks endpoints\n7. Run `next build` in `frontend/` \u2014 builds with zero TypeScript errors\n8. Full auth flow end-to-end: register, login, create task, view task list, toggle status, delete task\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Work Units section present."}, {"text": "Project scaffold and shared types are in foundation", "passed": true, "evidence": "Foundation includes monorepo scaffold and shared types."}, {"text": "Database schema (Prisma) is in foundation", "passed": true, "evidence": "Prisma schema included in foundation phase."}, {"text": "Auth middleware is in foundation or sequential before routes", "passed": true, "evidence": "Auth middleware is in the foundation phase."}, {"text": "Frontend components in parallel units", "passed": true, "evidence": "Frontend UI is a separate parallel unit."}, {"text": "Backend routes NOT parallel with unbuilt auth middleware", "passed": true, "evidence": "Backend routes depend only on foundation (where auth lives)."}, {"text": "api.ts dependency on types/ noted", "passed": true, "evidence": "Frontend unit notes dependency on types/ from foundation."}, {"text": "Dependency analysis identifies backend route dependencies", "passed": true, "evidence": "Analysis identifies routes import from types/ and use auth middleware."}], "summary": {"passed": 8, "failed": 0, "total": 8, "pass_rate": 1.0}}}, {"id": "eval-3-mixed-without_skill", "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-mixed.md. Don't interview me \u2014 the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.", "eval_id": 3, "outputs": [{"name": "spec-mixed-with-units.md", "type": "text", "content": "# Spec: Full-Stack Task Manager\n\n## Context\nBuild a task management web app from scratch with a Next.js frontend, Express API backend, and PostgreSQL database. Greenfield project.\n\n## Tech Stack\n- Frontend: Next.js 14, TypeScript, Tailwind CSS\n- Backend: Express.js, TypeScript\n- Auth: JWT-based authentication\n- Database: PostgreSQL with Prisma ORM\n\n## Deliverables\n\n1. **Project scaffold** \u2014 monorepo with `frontend/` and `backend/` directories, shared `types/` package\n2. **`types/index.ts`** \u2014 Shared TypeScript interfaces: Task, User, ApiResponse\n3. **`backend/prisma/schema.prisma`** \u2014 Database schema for users and tasks tables\n4. **`backend/src/middleware/auth.ts`** \u2014 JWT auth middleware\n5. **`backend/src/routes/tasks.ts`** \u2014 CRUD API endpoints for tasks (imports from types/ and uses auth middleware)\n6. **`backend/src/routes/auth.ts`** \u2014 Login/register endpoints (imports from types/, uses Prisma)\n7. **`frontend/src/components/TaskList.tsx`** \u2014 Task list component with CRUD operations\n8. **`frontend/src/components/TaskForm.tsx`** \u2014 Create/edit task form\n9. **`frontend/src/components/AuthForm.tsx`** \u2014 Login/register form\n10. **`frontend/src/lib/api.ts`** \u2014 API client (imports types from types/)\n\n## Implementation Details\n\n### Shared Types\n```typescript\ninterface Task { id: string; title: string; status: 'todo' | 'in_progress' | 'done'; userId: string; }\ninterface User { id: string; email: string; name: string; }\ninterface ApiResponse<T> { data: T; error?: string; }\n```\n\n### Database Schema\n- Users table: id, email, password_hash, name, created_at\n- Tasks table: id, title, description, status, user_id (FK), created_at, updated_at\n\n### Auth Middleware\n- Verify JWT from Authorization header\n- Attach user to request object\n- 401 on invalid/missing token\n\n### API Endpoints\n- POST /auth/register, POST /auth/login\n- GET /tasks, POST /tasks, PUT /tasks/:id, DELETE /tasks/:id (all require auth)\n\n### Frontend Components\n- TaskList: fetches tasks, displays in list, supports status toggle and delete\n- TaskForm: controlled form for creating/editing tasks\n- AuthForm: login/register with email + password\n\n## Verification\n1. `npm install` in both frontend/ and backend/\n2. `npx prisma generate` succeeds\n3. Backend starts and responds to health check\n4. Frontend builds without TypeScript errors\n5. Auth flow works end-to-end\n\n## Work Units\n\n### Dependency Graph\n\n```\nUnit 1 (Foundation)\n  \u251c\u2500\u2500> Unit 2 (Backend: DB + Auth)\n  \u251c\u2500\u2500> Unit 3 (Backend: Task Routes)\n  \u2514\u2500\u2500> Unit 4 (Frontend)\n```\n\nUnit 1 must complete first. Units 2, 3, and 4 can then execute in parallel.\n\n---\n\n### Unit 1 \u2014 Foundation (must complete first)\n\n**Purpose:** Establish the monorepo scaffold and shared type definitions that all other units import.\n\n**Owned files:**\n- `package.json` (root)\n- `tsconfig.json` (root, if applicable)\n- `types/index.ts`\n- `types/package.json`\n- `types/tsconfig.json`\n- `backend/package.json`\n- `backend/tsconfig.json`\n- `backend/src/index.ts` (Express app entry point with health-check route)\n- `frontend/package.json`\n- `frontend/tsconfig.json`\n- `frontend/next.config.js`\n- `frontend/tailwind.config.ts`\n- `frontend/postcss.config.js`\n- `frontend/src/app/layout.tsx`\n- `frontend/src/app/page.tsx`\n\n**Deliverables covered:** #1 (project scaffold), #2 (shared types)\n\n**Exit criteria:**\n- `npm install` succeeds at the root and in each sub-package.\n- `types/index.ts` exports `Task`, `User`, and `ApiResponse<T>` interfaces.\n- Backend entry point starts and responds to a health-check endpoint.\n- Frontend builds with `next build` (placeholder pages are fine).\n\n---\n\n### Unit 2 \u2014 Backend: Database Schema + Auth Routes (parallel)\n\n**Purpose:** Set up the Prisma schema and implement authentication endpoints.\n\n**Owned files:**\n- `backend/prisma/schema.prisma`\n- `backend/src/middleware/auth.ts`\n- `backend/src/routes/auth.ts`\n\n**Depends on:** Unit 1 (imports from `types/`, uses the Express app scaffold and `backend/package.json` dependencies)\n\n**Deliverables covered:** #3 (Prisma schema), #4 (auth middleware), #6 (auth routes)\n\n**Exit criteria:**\n- `npx prisma generate` succeeds.\n- Auth middleware correctly verifies JWTs and rejects invalid/missing tokens with 401.\n- `POST /auth/register` creates a user and returns a JWT.\n- `POST /auth/login` authenticates and returns a JWT.\n\n---\n\n### Unit 3 \u2014 Backend: Task Routes (parallel)\n\n**Purpose:** Implement CRUD API endpoints for tasks.\n\n**Owned files:**\n- `backend/src/routes/tasks.ts`\n\n**Depends on:** Unit 1 (imports from `types/`). Also has a runtime dependency on Unit 2's auth middleware and Prisma schema, but at the code level it only imports `auth.ts` by path and the Prisma client \u2014 these imports can resolve as long as Unit 1's scaffold is in place and the files from Unit 2 exist. To keep worktrees independent, Unit 3 should define its own import references and rely on interface contracts rather than Unit 2's implementation. At integration time the files merge cleanly because they own different paths.\n\n**Deliverables covered:** #5 (task CRUD routes)\n\n**Integration note:** This unit imports `../middleware/auth` and uses the Prisma client. During isolated development, stub or mock these imports. At merge time, Unit 2's real implementations slot in with no file conflicts since there is no overlapping file ownership.\n\n**Exit criteria:**\n- `GET /tasks` returns tasks for the authenticated user.\n- `POST /tasks` creates a task.\n- `PUT /tasks/:id` updates a task.\n- `DELETE /tasks/:id` deletes a task.\n- All endpoints return `ApiResponse<T>` shaped responses.\n\n---\n\n### Unit 4 \u2014 Frontend (parallel)\n\n**Purpose:** Build all React components and the API client layer.\n\n**Owned files:**\n- `frontend/src/components/TaskList.tsx`\n- `frontend/src/components/TaskForm.tsx`\n- `frontend/src/components/AuthForm.tsx`\n- `frontend/src/lib/api.ts`\n\n**Depends on:** Unit 1 (imports from `types/`, uses the Next.js scaffold)\n\n**Deliverables covered:** #7 (TaskList), #8 (TaskForm), #9 (AuthForm), #10 (API client)\n\n**Exit criteria:**\n- `frontend/` builds without TypeScript errors (`next build`).\n- `api.ts` exports functions for login, register, and task CRUD, all returning `ApiResponse<T>`.\n- `AuthForm` renders login/register with email + password fields.\n- `TaskList` renders tasks and supports status toggle and delete.\n- `TaskForm` renders a controlled form for creating/editing tasks.\n\n---\n\n### Integration & Merge Order\n\n1. Merge Unit 1 into `main` first.\n2. Merge Units 2, 3, and 4 in any order \u2014 they own non-overlapping files.\n3. After all merges, run the full verification checklist from the spec to confirm end-to-end functionality.\n"}], "grading": {"expectations": [{"text": "Output contains a '## Work Units' section", "passed": true, "evidence": "Line 59 contains '## Work Units'."}, {"text": "Project scaffold and shared types are in foundation", "passed": true, "evidence": "Unit 1 Foundation includes scaffold + types/index.ts."}, {"text": "Database schema (Prisma) is in foundation", "passed": false, "evidence": "Prisma schema is in Unit 2, not Foundation."}, {"text": "Auth middleware is in foundation or sequential before routes", "passed": false, "evidence": "Auth middleware in Unit 2 (parallel), running alongside Unit 3 (task routes) which depends on it."}, {"text": "Frontend components in parallel units", "passed": true, "evidence": "All frontend components in Unit 4, parallel."}, {"text": "Backend routes NOT parallel with unbuilt auth middleware", "passed": false, "evidence": "Unit 3 (task routes) runs parallel with Unit 2 (auth) despite depending on it."}, {"text": "api.ts dependency on types/ noted", "passed": true, "evidence": "Unit 4 states it depends on Unit 1 and imports from types/."}, {"text": "Dependency analysis identifies backend route dependencies", "passed": true, "evidence": "Unit 3 notes imports from types/ and runtime dependency on Unit 2."}], "summary": {"passed": 5, "failed": 3, "total": 8, "pass_rate": 0.625}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "spec_developer (work-unit structuring)", "skill_path": "/workspace/.claude/commands/spec_developer.md", "executor_model": "claude-opus-4-6", "timestamp": "2026-03-19T16:26:00Z", "evals_run": [1, 2, 3], "runs_per_configuration": 1}, "runs": [{"eval_id": 1, "eval_name": "parallelizable-scrapers", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 7, "failed": 0, "total": 7, "time_seconds": 42.0, "tokens": 13061, "errors": 0}}, {"eval_id": 1, "eval_name": "parallelizable-scrapers", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.857, "passed": 6, "failed": 1, "total": 7, "time_seconds": 59.2, "tokens": 13046, "errors": 0}}, {"eval_id": 2, "eval_name": "sequential-import-dependency", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 42.3, "tokens": 12876, "errors": 0}}, {"eval_id": 2, "eval_name": "sequential-import-dependency", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 101.3, "tokens": 16055, "errors": 0}}, {"eval_id": 3, "eval_name": "mixed-fullstack-app", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 8, "failed": 0, "total": 8, "time_seconds": 100.5, "tokens": 16684, "errors": 0}}, {"eval_id": 3, "eval_name": "mixed-fullstack-app", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.625, "passed": 5, "failed": 3, "total": 8, "time_seconds": 88.8, "tokens": 12194, "errors": 0}}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 61.6, "stddev": 33.6, "min": 42.0, "max": 100.5}, "tokens": {"mean": 14207, "stddev": 2147, "min": 12876, "max": 16684}}, "without_skill": {"pass_rate": {"mean": 0.827, "stddev": 0.195, "min": 0.625, "max": 1.0}, "time_seconds": {"mean": 83.1, "stddev": 21.5, "min": 59.2, "max": 101.3}, "tokens": {"mean": 13765, "stddev": 2015, "min": 12194, "max": 16055}}, "delta": {"pass_rate": "+0.173", "time_seconds": "-21.5", "tokens": "+442"}}, "notes": ["Eval 1 (parallelizable): Both configurations correctly identified scrapers as independent. Skill version added a proper post-merge verification section that baseline missed.", "Eval 2 (sequential): BOTH configurations correctly identified the import dependency and recommended sequential execution. Claude's base reasoning catches obvious import dependencies even without the skill.", "Eval 3 (mixed): BIGGEST DIFFERENCE. With-skill correctly placed Prisma schema + auth middleware in foundation phase. Without-skill put auth middleware in a parallel unit alongside task routes that depend on it \u2014 this would cause build failures.", "The skill's primary value is in complex dependency analysis (eval 3), not simple cases (eval 2). It also enforces consistent output format (post-merge verification, explicit strategy labels)."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

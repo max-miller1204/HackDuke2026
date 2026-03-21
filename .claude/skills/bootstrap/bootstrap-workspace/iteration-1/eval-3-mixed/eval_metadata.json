@@ -1,0 +1,15 @@
+{
+  "eval_id": 3,
+  "eval_name": "mixed-fullstack-app",
+  "prompt": "Read the spec at /workspace/.claude/skills/bootstrap/evals/files/spec-mixed.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to the outputs directory.",
+  "assertions": [
+    "Output contains a '## Work Units' section",
+    "Project scaffold and shared types are in the foundation unit",
+    "Database schema (Prisma) is in the foundation unit",
+    "Auth middleware is either in foundation or a sequential unit that runs before routes",
+    "Frontend components that don't depend on each other are in parallel units",
+    "Backend routes are NOT in parallel units alongside frontend components if they depend on auth middleware that hasn't been built yet",
+    "The api.ts client (which imports shared types) has its dependency on types/ noted",
+    "Dependency analysis identifies that backend routes import from types/ and use auth middleware"
+  ]
+}

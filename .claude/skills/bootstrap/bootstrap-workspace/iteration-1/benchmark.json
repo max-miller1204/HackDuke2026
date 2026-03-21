@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "skill_name": "spec_developer (work-unit structuring)",
+    "skill_path": "/workspace/.claude/commands/spec_developer.md",
+    "executor_model": "claude-opus-4-6",
+    "timestamp": "2026-03-19T16:26:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "parallelizable-scrapers",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 42.0,
+        "tokens": 13061,
+        "errors": 0
+      }
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "parallelizable-scrapers",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 59.2,
+        "tokens": 13046,
+        "errors": 0
+      }
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "sequential-import-dependency",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 42.3,
+        "tokens": 12876,
+        "errors": 0
+      }
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "sequential-import-dependency",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 101.3,
+        "tokens": 16055,
+        "errors": 0
+      }
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "mixed-fullstack-app",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 100.5,
+        "tokens": 16684,
+        "errors": 0
+      }
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "mixed-fullstack-app",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.625,
+        "passed": 5,
+        "failed": 3,
+        "total": 8,
+        "time_seconds": 88.8,
+        "tokens": 12194,
+        "errors": 0
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 61.6, "stddev": 33.6, "min": 42.0, "max": 100.5},
+      "tokens": {"mean": 14207, "stddev": 2147, "min": 12876, "max": 16684}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.827, "stddev": 0.195, "min": 0.625, "max": 1.0},
+      "time_seconds": {"mean": 83.1, "stddev": 21.5, "min": 59.2, "max": 101.3},
+      "tokens": {"mean": 13765, "stddev": 2015, "min": 12194, "max": 16055}
+    },
+    "delta": {
+      "pass_rate": "+0.173",
+      "time_seconds": "-21.5",
+      "tokens": "+442"
+    }
+  },
+  "notes": [
+    "Eval 1 (parallelizable): Both configurations correctly identified scrapers as independent. Skill version added a proper post-merge verification section that baseline missed.",
+    "Eval 2 (sequential): BOTH configurations correctly identified the import dependency and recommended sequential execution. Claude's base reasoning catches obvious import dependencies even without the skill.",
+    "Eval 3 (mixed): BIGGEST DIFFERENCE. With-skill correctly placed Prisma schema + auth middleware in foundation phase. Without-skill put auth middleware in a parallel unit alongside task routes that depend on it — this would cause build failures.",
+    "The skill's primary value is in complex dependency analysis (eval 3), not simple cases (eval 2). It also enforces consistent output format (post-merge verification, explicit strategy labels)."
+  ]
+}

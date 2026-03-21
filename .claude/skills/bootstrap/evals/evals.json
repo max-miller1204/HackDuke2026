@@ -1,0 +1,49 @@
+{
+  "skill_name": "spec_developer + bootstrap",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Read the spec at evals/files/spec-parallelizable.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to outputs/spec-parallelizable-with-units.md",
+      "expected_output": "A spec with Work Units section that identifies 3 parallel scraper units and a foundation unit for requirements.txt + shared utilities. Execution strategy should be 'Foundation → Parallel'. The notebook should be sequential (depends on scraper output) OR part of post-merge verification.",
+      "files": ["evals/files/spec-parallelizable.md"],
+      "expectations": [
+        "Output contains a '## Work Units' section",
+        "Execution strategy is NOT 'Sequential' — the 3 scrapers are independent",
+        "The 3 scraper scripts are assigned to separate parallel units",
+        "No two parallel units share the same file",
+        "requirements.txt is in the foundation unit, not a parallel unit",
+        "Runtime dependencies section exists and addresses the notebook's dependency on the scrapers' CSV output",
+        "A post-merge verification section exists with an E2E test recipe"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Read the spec at evals/files/spec-sequential.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to outputs/spec-sequential-with-units.md",
+      "expected_output": "A spec with Work Units section that correctly identifies the notebook imports classes from quant_models.py — a runtime dependency that prevents parallel execution. Execution strategy should be 'Sequential'.",
+      "files": ["evals/files/spec-sequential.md"],
+      "expectations": [
+        "Output contains a '## Work Units' section",
+        "Execution strategy is 'Sequential' (single worker) — NOT 'Foundation → Parallel'",
+        "The runtime/import dependency is explicitly identified: notebook imports PublicOwnership and EVOptimizedSimulator from quant_models.py",
+        "Does NOT recommend parallel worktrees for these two units",
+        "Dependency analysis section mentions that the notebook cannot run without the classes existing first"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Read the spec at evals/files/spec-mixed.md. Don't interview me — the spec is already complete. Just add the Work Units section to the end of it. Write the result to outputs/spec-mixed-with-units.md",
+      "expected_output": "A spec with Work Units section that identifies foundation work (scaffold, shared types, DB schema, auth middleware), parallel frontend components, and notes that backend routes depend on auth middleware + types (so they should be foundation or sequential). Execution strategy should be 'Foundation → Mixed' or 'Foundation → Parallel' depending on how foundation is scoped.",
+      "files": ["evals/files/spec-mixed.md"],
+      "expectations": [
+        "Output contains a '## Work Units' section",
+        "Project scaffold and shared types are in the foundation unit",
+        "Database schema (Prisma) is in the foundation unit",
+        "Auth middleware is either in foundation or a sequential unit that runs before routes",
+        "Frontend components that don't depend on each other are in parallel units",
+        "Backend routes are NOT in parallel units alongside frontend components if they depend on auth middleware that hasn't been built yet",
+        "The api.ts client (which imports shared types) has its dependency on types/ noted",
+        "Dependency analysis identifies that backend routes import from types/ and use auth middleware"
+      ]
+    }
+  ]
+}

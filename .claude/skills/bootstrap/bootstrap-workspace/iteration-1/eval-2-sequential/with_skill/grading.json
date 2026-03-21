@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a '## Work Units' section",
+      "passed": true,
+      "evidence": "Line 37 contains '## Work Units'."
+    },
+    {
+      "text": "Execution strategy is 'Sequential' (single worker)",
+      "passed": true,
+      "evidence": "Line 40: 'Sequential (single worker)'."
+    },
+    {
+      "text": "Runtime/import dependency explicitly identified",
+      "passed": true,
+      "evidence": "Names PublicOwnership and EVOptimizedSimulator imports as 'hard runtime/import dependency'."
+    },
+    {
+      "text": "Does NOT recommend parallel worktrees",
+      "passed": true,
+      "evidence": "No parallel units section; uses sequential table only."
+    },
+    {
+      "text": "Dependency analysis mentions notebook cannot run without classes",
+      "passed": true,
+      "evidence": "'cannot execute, be tested, or even parse correctly without the classes existing'."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}
