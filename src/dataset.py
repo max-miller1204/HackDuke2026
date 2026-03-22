@@ -79,6 +79,12 @@ class SleepEDFDataset(Dataset):
         # Stack: (C=4, S=num_patches, E=embed_dim)
         x_data = np.stack(x_data)
         x_data = torch.tensor(x_data, dtype=torch.float32)
+
+        # Repeat epoch labels to match patch count (6 patches per 30s epoch)
+        patches_per_epoch = x_data.shape[1] // len(y_data) if len(y_data) > 0 else 6
+        y_data = np.repeat(y_data, patches_per_epoch)
+        # Trim to exact patch count
+        y_data = y_data[: x_data.shape[1]]
         y_data = torch.tensor(y_data, dtype=torch.float32)
 
         # Apply augmentations if training
