@@ -22,6 +22,8 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "sleepfm-clinical" / "sleepfm"))
 from models.models import SleepEventLSTMClassifier
 
+import numpy as np
+
 from src.dataset import SleepEDFDataset, collate_fn
 
 
@@ -151,6 +153,20 @@ def main():
     val_dataset = SleepEDFDataset(
         processed_dir, config["val_subjects"], config, augment=False
     )
+
+    # Compute class weights
+    if config["class_weights"] == "auto":
+        all_labels = np.concatenate([s["y_epochs"] for s in train_dataset.subjects])
+        num_classes = config["num_classes"]
+        counts = np.bincount(all_labels.astype(int), minlength=num_classes).astype(float)
+        counts = np.maximum(counts, 1.0)  # avoid div-by-zero
+        inv_freq = 1.0 / counts
+        # Normalize so mean weight = 1.0
+        weights = inv_freq / inv_freq.mean()
+        config["class_weights"] = weights.tolist()
+        logger.info(f"Auto class weights (inv-freq): {dict(zip(['W','R','N1','N2','N3'], [f'{w:.2f}' for w in weights]))}")
+    else:
+        logger.info(f"Manual class weights: {config['class_weights']}")
 
     batch_size = config["batch_size"]
     num_workers = config.get("num_workers", 4)

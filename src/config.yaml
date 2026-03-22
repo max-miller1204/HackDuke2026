@@ -32,8 +32,9 @@ original_freq: 100
 epoch_duration_sec: 30
 num_classes: 5
 
-# class weights for masked_cross_entropy_loss: W, R, N1, N2, N3
-class_weights: [1.0, 2.0, 5.0, 2.0, 2.0]
+# class weights: "auto" computes inverse-frequency weights from training data
+# or provide manual list: [W, R, N1, N2, N3]
+class_weights: "auto"
 
 # stage mapping: annotation label -> integer class
 stage_mapping:
@@ -49,6 +50,9 @@ drop_stages:
   - "Sleep stage ?"
   - "Movement time"
 
+# wake trimming: keep sleep period + N buffer epochs (30 epochs = 15 min) on each side
+wake_trim_buffer_epochs: 30
+
 # paths
 data_dir: "data"
 processed_dir: "data/processed"
@@ -56,7 +60,7 @@ pretrained_checkpoint: "sleepfm-clinical/sleepfm/checkpoints/model_base/best.pt"
 save_dir: "checkpoints/sleepfm-sleepEDF"
 
 # data split (Sleep-EDF subject IDs)
-train_subjects: ["SC4001", "SC4002", "SC4011"]
+train_subjects: ["SC4001", "SC4002", "SC4011", "SC4022", "SC4031"]
 val_subjects: ["SC4012"]
 test_subjects: ["SC4021"]
 

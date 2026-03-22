@@ -247,6 +247,27 @@ def process_subject(
     valid_mask = labels != -1
     valid_labels = labels[valid_mask]
 
+    # 4b. Trim excessive Wake epochs — keep only sleep period + buffer
+    wake_trim_buffer = config.get("wake_trim_buffer_epochs", 30)  # 15 min each side
+    non_wake_indices = np.where(valid_labels != 0)[0]
+    if len(non_wake_indices) > 0:
+        sleep_start = max(0, non_wake_indices[0] - wake_trim_buffer)
+        sleep_end = min(len(valid_labels), non_wake_indices[-1] + 1 + wake_trim_buffer)
+        trimmed_labels = valid_labels[sleep_start:sleep_end]
+        logger.info(
+            f"  Wake trimming: {len(valid_labels)} → {len(trimmed_labels)} epochs "
+            f"(kept epochs {sleep_start}–{sleep_end})"
+        )
+        # Adjust signal to match trimmed epoch range
+        samples_per_epoch = target_freq * config["epoch_duration_sec"]  # 3840
+        trim_start_sample = sleep_start * samples_per_epoch
+        trim_end_sample = sleep_end * samples_per_epoch
+        channels = {
+            ch: sig[trim_start_sample:trim_end_sample]
+            for ch, sig in channels.items()
+        }
+        valid_labels = trimmed_labels
+
     # 5. Build per-modality tensors
     total_samples = min(len(sig) for sig in channels.values())
     modality_tensors = build_modality_tensors(channels, total_samples)
