@@ -1,0 +1,80 @@
+# Knowledge Distillation: SleepFM → Jetson TK1
+
+# Teacher
+teacher:
+  checkpoint: "checkpoints/sleepfm-sleepEDF/best.pth"
+  model_params:
+    embed_dim: 128
+    num_heads: 4
+    num_layers: 1
+    num_classes: 5
+    pooling_head: 4
+    dropout: 0.3
+    max_seq_length: 6000
+
+# Student architectures
+students:
+  SmallGRU:
+    proj_dim: 48
+    hidden_dim: 24
+    bidirectional: true
+  Conv1dStack:
+    hidden_channels: 32
+    kernel_size: 5
+  MLPPerPatch:
+    hidden_dim: 64
+    smooth_kernel: 3
+
+# Shared student params
+embed_dim: 128
+num_classes: 5
+
+# Distillation sweep
+sweep:
+  temperatures: [2, 4, 8]
+  alphas: [0.3, 0.5, 0.7]
+
+# Training
+training:
+  optimizer: "AdamW"
+  lr: 0.001
+  epochs: 50
+  batch_size: 16
+  early_stopping_patience: 10
+  scheduler: "ReduceLROnPlateau"
+  scheduler_patience: 5
+  scheduler_factor: 0.5
+  num_workers: 4
+  seed: 42
+
+# Windowing (student training uses shorter windows than teacher finetuning)
+windowing:
+  window_epochs: 20        # 20 epochs = 10 min
+  stride_epochs: 10        # 50% overlap
+  oversample_factor: 3
+  minority_classes: [1, 2, 4]  # REM, N1, N3
+
+# Data
+data:
+  processed_dir: "data/processed"
+  teacher_logits_dir: "data/processed/teacher_logits"
+  train_subjects: ["SC4001", "SC4002", "SC4011", "SC4022", "SC4031"]
+  val_subjects: ["SC4012"]
+  test_subjects: ["SC4021"]
+
+max_channels: 4
+class_weights: "auto"
+
+# Export
+export:
+  onnx_opset: 11
+  output_dir: "checkpoints/distill"
+  validation_atol: 1.0e-5
+
+# Jetson TK1 specs (for estimated benchmarking)
+jetson_tk1:
+  peak_gflops: 326
+  efficiency_factor: 0.1
+  ram_gb: 2
+  cuda_cores: 192
+  compute_capability: "3.2"
