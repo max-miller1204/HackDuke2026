@@ -40,7 +40,7 @@ def masked_cross_entropy_loss(outputs, y_data, mask, class_weights):
     class_weights: list of floats
     """
     B, seq_len, num_classes = outputs.shape
-    outputs = outputs.reshape(B * seq_len, num_classes)
+    outputs = outputs.float().reshape(B * seq_len, num_classes)
     y_data = y_data.reshape(B * seq_len).long()
 
     # Use temporal mask (first channel dimension)
@@ -62,10 +62,11 @@ def masked_cross_entropy_loss(outputs, y_data, mask, class_weights):
     return loss.sum()
 
 
-def train_one_epoch(model, loader, optimizer, device, config, epoch, num_epochs):
+def train_one_epoch(model, loader, optimizer, device, config, epoch, num_epochs, scaler=None):
     model.train()
     running_loss = 0.0
     log_interval = config.get("log_interval", 10)
+    use_amp = scaler is not None
 
     for i, (x_data, y_data, padded_mask, _) in enumerate(
         tqdm(loader, desc=f"Epoch {epoch + 1}/{num_epochs}")
@@ -74,11 +75,17 @@ def train_one_epoch(model, loader, optimizer, device, config, epoch, num_epochs)
         y_data = y_data.to(device)
         padded_mask = padded_mask.to(device)
 
-        outputs, mask = model(x_data, padded_mask)
-        loss = masked_cross_entropy_loss(outputs, y_data, mask, config["class_weights"])
+        with torch.amp.autocast("cuda", enabled=use_amp):
+            outputs, mask = model(x_data, padded_mask)
+            loss = masked_cross_entropy_loss(outputs, y_data, mask, config["class_weights"])
 
-        loss.backward()
-        optimizer.step()
+        if use_amp:
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            loss.backward()
+            optimizer.step()
         optimizer.zero_grad()
 
         running_loss += loss.item()
@@ -93,7 +100,7 @@ def train_one_epoch(model, loader, optimizer, device, config, epoch, num_epochs)
     return running_loss / max(len(loader), 1)
 
 
-def validate(model, loader, device, config):
+def validate(model, loader, device, config, use_amp=False):
     model.eval()
     val_loss = 0.0
     correct = 0
@@ -105,7 +112,8 @@ def validate(model, loader, device, config):
             y_data = y_data.to(device)
             padded_mask = padded_mask.to(device)
 
-            outputs, mask = model(x_data, padded_mask)
+            with torch.amp.autocast("cuda", enabled=use_amp):
+                outputs, mask = model(x_data, padded_mask)
             loss = masked_cross_entropy_loss(outputs, y_data, mask, config["class_weights"])
             val_loss += loss.item()
 
@@ -172,6 +180,10 @@ def main():
         patience=config.get("scheduler_patience", 3),
     )
 
+    # Mixed precision
+    use_amp = device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda") if use_amp else None
+
     # Training loop
     num_epochs = config["epochs"]
     best_val_loss = float("inf")
@@ -179,10 +191,10 @@ def main():
 
     for epoch in range(num_epochs):
         train_loss = train_one_epoch(
-            model, train_loader, optimizer, device, config, epoch, num_epochs
+            model, train_loader, optimizer, device, config, epoch, num_epochs, scaler
         )
 
-        val_loss, val_acc = validate(model, val_loader, device, config)
+        val_loss, val_acc = validate(model, val_loader, device, config, use_amp)
         scheduler.step(val_loss)
 
         current_lr = optimizer.param_groups[0]["lr"]

@@ -1,9 +1,7 @@
-"""Modal integration for running the full SleepFM finetuning pipeline.
+"""Modal integration for running SleepFM finetuning pipeline.
 
-Single Modal function that:
-1. Uploads raw EDFs + pretrained checkpoint to Modal volume
-2. Runs preprocess → train → evaluate → export
-3. Downloads checkpoint bundle
+Bundles preprocessed data into the image, runs train → evaluate on GPU,
+and exports the checkpoint bundle to a Modal volume.
 """
 
 import modal
@@ -33,6 +31,7 @@ image = (
         "sleepfm-clinical/sleepfm",
         remote_path="/app/sleepfm-clinical/sleepfm",
     )
+    .add_local_dir("data/processed", remote_path="/app/data/processed")
     .add_local_file("pyproject.toml", remote_path="/app/pyproject.toml")
 )
 
@@ -44,10 +43,12 @@ image = (
     volumes={"/data": volume},
 )
 def run_pipeline():
-    """Run full pipeline: preprocess → train → evaluate."""
+    """Run train → evaluate on preprocessed data."""
+    import json
     import os
     import shutil
     import sys
+    from datetime import datetime
     from pathlib import Path
 
     os.chdir("/app")
@@ -55,61 +56,31 @@ def run_pipeline():
 
     from loguru import logger
 
-    # Check if data exists on volume, if not copy from local
-    data_dir = Path("/data/raw")
-    if not data_dir.exists():
-        logger.error("No raw data found on volume at /data/raw/")
-        logger.info("Upload EDF files first: modal volume put circadia-data <local-path> /raw/")
-        return {"status": "error", "message": "No raw data on volume"}
+    # Verify preprocessed data is present
+    processed_dir = Path("/app/data/processed")
+    hdf5_files = list(processed_dir.glob("*.hdf5"))
+    csv_files = list(processed_dir.glob("*.csv"))
+    logger.info(f"Found {len(hdf5_files)} HDF5 + {len(csv_files)} CSV files in {processed_dir}")
 
-    # Also need pretrained checkpoint on volume
-    checkpoint_vol = Path("/data/pretrained")
-    if not checkpoint_vol.exists():
-        logger.error("No pretrained checkpoint on volume at /data/pretrained/")
-        logger.info("Upload: modal volume put circadia-data <checkpoint-dir> /pretrained/")
-        return {"status": "error", "message": "No pretrained checkpoint on volume"}
+    if not hdf5_files:
+        return {"status": "error", "message": "No preprocessed data found"}
 
-    # Symlink data and checkpoint to expected paths
-    app_data = Path("/app/data")
-    app_data.mkdir(exist_ok=True)
-
-    # Copy raw EDFs
-    for edf_file in data_dir.glob("*.edf"):
-        shutil.copy2(edf_file, app_data / edf_file.name)
-
-    # Symlink pretrained checkpoint
-    pretrained_dst = Path("/app/sleepfm-clinical/sleepfm/checkpoints/model_base")
-    pretrained_dst.mkdir(parents=True, exist_ok=True)
-    for f in checkpoint_vol.iterdir():
-        dst = pretrained_dst / f.name
-        if not dst.exists():
-            shutil.copy2(f, dst)
-
-    # Step 1: Preprocess
-    logger.info("=== Step 1: Preprocessing ===")
-    from src.preprocess import main as preprocess_main
-    preprocess_main()
-
-    # Step 2: Train
-    logger.info("=== Step 2: Training ===")
+    # Step 1: Train
+    logger.info("=== Step 1: Training ===")
     from src.train import main as train_main
     train_main()
 
-    # Step 3: Evaluate
-    logger.info("=== Step 3: Evaluation ===")
+    # Step 2: Evaluate
+    logger.info("=== Step 2: Evaluation ===")
     from src.evaluate import main as evaluate_main
     evaluate_main()
 
-    # Step 4: Export checkpoint bundle to volume
-    logger.info("=== Step 4: Exporting checkpoint bundle ===")
+    # Step 3: Export checkpoint bundle
+    logger.info("=== Step 3: Exporting checkpoint bundle ===")
     from src.channel_map import export_channel_mapping
 
     save_dir = Path("/app/checkpoints/sleepfm-sleepEDF")
     export_channel_mapping(save_dir / "channel_mapping.json")
-
-    # Save metadata
-    import json
-    from datetime import datetime
 
     metadata = {
         "trained_at": datetime.now().isoformat(),
@@ -122,7 +93,7 @@ def run_pipeline():
     with open(save_dir / "metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
-    # Copy bundle to volume
+    # Copy bundle to volume for persistence
     output_vol = Path("/data/checkpoints/sleepfm-sleepEDF")
     output_vol.mkdir(parents=True, exist_ok=True)
     for f in save_dir.iterdir():
@@ -131,7 +102,7 @@ def run_pipeline():
     volume.commit()
     logger.info("Checkpoint bundle saved to volume at /data/checkpoints/sleepfm-sleepEDF/")
 
-    # Load and return results
+    # Return results
     results_path = save_dir / "evaluation_results.json"
     if results_path.exists():
         with open(results_path) as f:
