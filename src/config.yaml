@@ -1,0 +1,73 @@
+# SleepFM finetune on Sleep-EDF config
+
+# model
+model_params:
+  embed_dim: 128
+  num_heads: 4
+  num_layers: 1
+  num_classes: 5
+  pooling_head: 4
+  dropout: 0.3
+  max_seq_length: 8196
+
+max_channels: 4
+model: "SleepEventLSTMClassifier"
+seed: 42
+
+# training
+batch_size: 4
+epochs: 20
+lr: 0.0001
+num_workers: 4
+accumulation_steps: 1
+
+# scheduler
+scheduler: "ReduceLROnPlateau"
+scheduler_patience: 3
+scheduler_factor: 0.5
+
+# data
+sampling_freq: 128
+original_freq: 100
+epoch_duration_sec: 30
+num_classes: 5
+
+# class weights for masked_cross_entropy_loss: W, R, N1, N2, N3
+class_weights: [1.0, 4.0, 2.0, 4.0, 3.0]
+
+# stage mapping: annotation label -> integer class
+stage_mapping:
+  "Sleep stage W": 0
+  "Sleep stage R": 1
+  "Sleep stage 1": 2
+  "Sleep stage 2": 3
+  "Sleep stage 3": 4
+  "Sleep stage 4": 4
+
+# stages to drop
+drop_stages:
+  - "Sleep stage ?"
+  - "Movement time"
+
+# paths
+data_dir: "data"
+processed_dir: "data/processed"
+pretrained_checkpoint: "sleepfm-clinical/sleepfm/checkpoints/model_base/best.pt"
+save_dir: "checkpoints/sleepfm-sleepEDF"
+
+# data split (Sleep-EDF subject IDs)
+train_subjects: ["SC4001", "SC4002", "SC4011"]
+val_subjects: ["SC4012"]
+test_subjects: ["SC4021"]
+
+# channel config
+channel_like: ["BAS", "RESP", "EKG", "EMG"]
+
+# augmentation (training only)
+augmentation:
+  temporal_jitter_samples: 5
+  gaussian_noise_std: 0.05
+  random_channel_mask_prob: 0.2
+
+# logging
+log_interval: 10
