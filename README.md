@@ -12,6 +12,23 @@
    source .venv/bin/activate
    ```
 
+## Data
+
+1. Download the Sleep-EDF Expanded dataset (SC subjects) from [PhysioNet](https://physionet.org/content/sleep-edfx/1.0.0/) and place the `.edf` files in `data/`:
+   ```sh
+   data/
+   ├── SC4001E0-PSG.edf
+   ├── SC4001EC-Hypnogram.edf
+   ├── SC4002E0-PSG.edf
+   ├── SC4002EC-Hypnogram.edf
+   └── ...
+   ```
+
+2. Run preprocessing to generate embeddings and labels in `data/processed/`:
+   ```sh
+   uv run python -m src.preprocess
+   ```
+
 ## Running
 
 Train the model on Modal (requires a [Modal](https://modal.com/) account and `modal token set`):
