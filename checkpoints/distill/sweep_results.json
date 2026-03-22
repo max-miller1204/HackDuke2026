@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-22T16:19:01",
+  "device": "cuda",
+  "num_experiments": 27,
+  "training_config": {
+    "optimizer": "AdamW",
+    "lr": 0.001,
+    "epochs": 50,
+    "batch_size": 16,
+    "early_stopping_patience": 10,
+    "seed": 42
+  },
+  "class_weights": [0.2547, 1.5283, 2.8033, 0.3906, 2.5231],
+  "results": [
+    {"experiment_id": "SmallGRU_T2_a0.3", "architecture": "SmallGRU", "temperature": 2, "alpha": 0.3, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 18, "train_loss": 0.5012, "val_loss": 0.6845, "val_accuracy": 0.6523, "training_time_s": 45.2},
+    {"experiment_id": "SmallGRU_T2_a0.5", "architecture": "SmallGRU", "temperature": 2, "alpha": 0.5, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 15, "train_loss": 0.4231, "val_loss": 0.6912, "val_accuracy": 0.6398, "training_time_s": 38.1},
+    {"experiment_id": "SmallGRU_T2_a0.7", "architecture": "SmallGRU", "temperature": 2, "alpha": 0.7, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 12, "train_loss": 0.3512, "val_loss": 0.7234, "val_accuracy": 0.6187, "training_time_s": 32.4},
+    {"experiment_id": "SmallGRU_T4_a0.3", "architecture": "SmallGRU", "temperature": 4, "alpha": 0.3, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 20, "train_loss": 0.5234, "val_loss": 0.6712, "val_accuracy": 0.6634, "training_time_s": 48.3},
+    {"experiment_id": "SmallGRU_T4_a0.5", "architecture": "SmallGRU", "temperature": 4, "alpha": 0.5, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 17, "train_loss": 0.4456, "val_loss": 0.6801, "val_accuracy": 0.6512, "training_time_s": 42.1},
+    {"experiment_id": "SmallGRU_T4_a0.7", "architecture": "SmallGRU", "temperature": 4, "alpha": 0.7, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 14, "train_loss": 0.3678, "val_loss": 0.7123, "val_accuracy": 0.6289, "training_time_s": 36.5},
+    {"experiment_id": "SmallGRU_T8_a0.3", "architecture": "SmallGRU", "temperature": 8, "alpha": 0.3, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 22, "train_loss": 0.5401, "val_loss": 0.6623, "val_accuracy": 0.6745, "training_time_s": 52.1},
+    {"experiment_id": "SmallGRU_T8_a0.5", "architecture": "SmallGRU", "temperature": 8, "alpha": 0.5, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 19, "train_loss": 0.4612, "val_loss": 0.6734, "val_accuracy": 0.6612, "training_time_s": 46.2},
+    {"experiment_id": "SmallGRU_T8_a0.7", "architecture": "SmallGRU", "temperature": 8, "alpha": 0.7, "param_count": 17093, "model_size_bytes": 69960, "best_epoch": 15, "train_loss": 0.3812, "val_loss": 0.7012, "val_accuracy": 0.6389, "training_time_s": 38.9},
+    {"experiment_id": "Conv1dStack_T2_a0.3", "architecture": "Conv1dStack", "temperature": 2, "alpha": 0.3, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 25, "train_loss": 0.4123, "val_loss": 0.6256, "val_accuracy": 0.7520, "training_time_s": 58.3},
+    {"experiment_id": "Conv1dStack_T2_a0.5", "architecture": "Conv1dStack", "temperature": 2, "alpha": 0.5, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 21, "train_loss": 0.3456, "val_loss": 0.6389, "val_accuracy": 0.7312, "training_time_s": 51.2},
+    {"experiment_id": "Conv1dStack_T2_a0.7", "architecture": "Conv1dStack", "temperature": 2, "alpha": 0.7, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 18, "train_loss": 0.2834, "val_loss": 0.6612, "val_accuracy": 0.7089, "training_time_s": 44.8},
+    {"experiment_id": "Conv1dStack_T4_a0.3", "architecture": "Conv1dStack", "temperature": 4, "alpha": 0.3, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 27, "train_loss": 0.4289, "val_loss": 0.6102, "val_accuracy": 0.6967, "training_time_s": 62.1},
+    {"experiment_id": "Conv1dStack_T4_a0.5", "architecture": "Conv1dStack", "temperature": 4, "alpha": 0.5, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 23, "train_loss": 0.3612, "val_loss": 0.6234, "val_accuracy": 0.7198, "training_time_s": 55.4},
+    {"experiment_id": "Conv1dStack_T4_a0.7", "architecture": "Conv1dStack", "temperature": 4, "alpha": 0.7, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 19, "train_loss": 0.2978, "val_loss": 0.6501, "val_accuracy": 0.7023, "training_time_s": 47.6},
+    {"experiment_id": "Conv1dStack_T8_a0.3", "architecture": "Conv1dStack", "temperature": 8, "alpha": 0.3, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 29, "train_loss": 0.4412, "val_loss": 0.6245, "val_accuracy": 0.6912, "training_time_s": 65.8},
+    {"experiment_id": "Conv1dStack_T8_a0.5", "architecture": "Conv1dStack", "temperature": 8, "alpha": 0.5, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 25, "train_loss": 0.3734, "val_loss": 0.6178, "val_accuracy": 0.7234, "training_time_s": 58.9},
+    {"experiment_id": "Conv1dStack_T8_a0.7", "architecture": "Conv1dStack", "temperature": 8, "alpha": 0.7, "param_count": 25957, "model_size_bytes": 105812, "best_epoch": 20, "train_loss": 0.3089, "val_loss": 0.6423, "val_accuracy": 0.7112, "training_time_s": 50.3},
+    {"experiment_id": "MLPPerPatch_T2_a0.3", "architecture": "MLPPerPatch", "temperature": 2, "alpha": 0.3, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 8, "train_loss": 0.7812, "val_loss": 0.9412, "val_accuracy": 0.3212, "training_time_s": 28.1},
+    {"experiment_id": "MLPPerPatch_T2_a0.5", "architecture": "MLPPerPatch", "temperature": 2, "alpha": 0.5, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 7, "train_loss": 0.6523, "val_loss": 0.9456, "val_accuracy": 0.3345, "training_time_s": 25.3},
+    {"experiment_id": "MLPPerPatch_T2_a0.7", "architecture": "MLPPerPatch", "temperature": 2, "alpha": 0.7, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 6, "train_loss": 0.5234, "val_loss": 0.9523, "val_accuracy": 0.3478, "training_time_s": 22.8},
+    {"experiment_id": "MLPPerPatch_T4_a0.3", "architecture": "MLPPerPatch", "temperature": 4, "alpha": 0.3, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 9, "train_loss": 0.7934, "val_loss": 0.9389, "val_accuracy": 0.3123, "training_time_s": 29.4},
+    {"experiment_id": "MLPPerPatch_T4_a0.5", "architecture": "MLPPerPatch", "temperature": 4, "alpha": 0.5, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 5, "train_loss": 0.6058, "val_loss": 0.9478, "val_accuracy": 0.3195, "training_time_s": 26.7},
+    {"experiment_id": "MLPPerPatch_T4_a0.7", "architecture": "MLPPerPatch", "temperature": 4, "alpha": 0.7, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 5, "train_loss": 0.4315, "val_loss": 0.9446, "val_accuracy": 0.3543, "training_time_s": 24.1},
+    {"experiment_id": "MLPPerPatch_T8_a0.3", "architecture": "MLPPerPatch", "temperature": 8, "alpha": 0.3, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 14, "train_loss": 0.7301, "val_loss": 0.9448, "val_accuracy": 0.2503, "training_time_s": 34.2},
+    {"experiment_id": "MLPPerPatch_T8_a0.5", "architecture": "MLPPerPatch", "temperature": 8, "alpha": 0.5, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 5, "train_loss": 0.6062, "val_loss": 0.9479, "val_accuracy": 0.3218, "training_time_s": 27.8},
+    {"experiment_id": "MLPPerPatch_T8_a0.7", "architecture": "MLPPerPatch", "temperature": 8, "alpha": 0.7, "param_count": 8581, "model_size_bytes": 35908, "best_epoch": 5, "train_loss": 0.4325, "val_loss": 0.9472, "val_accuracy": 0.3558, "training_time_s": 25.6}
+  ]
+}

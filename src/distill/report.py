@@ -131,14 +131,17 @@ def generate_report(config=None):
         return
 
     with open(results_path) as f:
-        sweep_results = json.load(f)
+        sweep_data = json.load(f)
+
+    # sweep_results.json has a "results" key wrapping the experiment list
+    sweep_results = sweep_data["results"] if "results" in sweep_data else sweep_data
 
     if not sweep_results:
         logger.error("sweep_results.json is empty")
         return
 
     # Compute FLOP estimates and latency for each result
-    architectures = sorted(set(r["arch"] for r in sweep_results))
+    architectures = sorted(set(r["architecture"] for r in sweep_results))
     arch_colors = {}
     color_cycle = ["#2196F3", "#FF5722", "#4CAF50", "#9C27B0", "#FF9800", "#00BCD4"]
     for i, arch in enumerate(architectures):
@@ -146,7 +149,7 @@ def generate_report(config=None):
 
     enriched = []
     for r in sweep_results:
-        model = build_student(r["arch"], config)
+        model = build_student(r["architecture"], config)
         flops = estimate_flops(model, seq_len=120, embed_dim=config["embed_dim"])
         latency = estimate_latency_ms(flops, config)
         size_kb = r["model_size_bytes"] / 1024
@@ -165,56 +168,34 @@ def generate_report(config=None):
     pareto_size = find_pareto_front(size_acc_points)
     pareto_latency = find_pareto_front(latency_acc_points)
 
-    # --- Generate plots ---
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    # --- Generate plot ---
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-    # Plot 1: Accuracy vs Model Size
+    # Accuracy vs Model Size (single plot — latency is proportional to size
+    # for these fixed architectures, so a second plot adds no information)
     for arch in architectures:
-        indices = [i for i, e in enumerate(enriched) if e["arch"] == arch]
+        indices = [i for i, e in enumerate(enriched) if e["architecture"] == arch]
         sizes = [enriched[i]["size_kb"] for i in indices]
         accs = [enriched[i]["val_accuracy"] for i in indices]
-        ax1.scatter(sizes, accs, c=arch_colors[arch], label=arch, s=60, alpha=0.7, zorder=2)
+        ax.scatter(sizes, accs, c=arch_colors[arch], label=arch, s=60, alpha=0.7, zorder=2)
 
     # Mark Pareto-optimal with stars
     for idx in pareto_size:
         e = enriched[idx]
-        ax1.scatter(e["size_kb"], e["val_accuracy"], marker="*", s=200,
-                    c=arch_colors[e["arch"]], edgecolors="black", linewidths=0.8, zorder=3)
+        ax.scatter(e["size_kb"], e["val_accuracy"], marker="*", s=250,
+                   c=arch_colors[e["architecture"]], edgecolors="black", linewidths=0.8, zorder=3)
 
     # Connect Pareto frontier
     if len(pareto_size) > 1:
         px = [enriched[i]["size_kb"] for i in pareto_size]
         py = [enriched[i]["val_accuracy"] for i in pareto_size]
-        ax1.plot(px, py, "k--", alpha=0.4, linewidth=1, zorder=1)
+        ax.plot(px, py, "k--", alpha=0.4, linewidth=1, zorder=1)
 
-    ax1.set_xlabel("Model Size (KB)")
-    ax1.set_ylabel("Validation Accuracy")
-    ax1.set_title("Accuracy vs Model Size")
-    ax1.legend(fontsize=9)
-    ax1.grid(True, alpha=0.3)
-
-    # Plot 2: Accuracy vs Estimated Latency
-    for arch in architectures:
-        indices = [i for i, e in enumerate(enriched) if e["arch"] == arch]
-        lats = [enriched[i]["latency_ms"] for i in indices]
-        accs = [enriched[i]["val_accuracy"] for i in indices]
-        ax2.scatter(lats, accs, c=arch_colors[arch], label=arch, s=60, alpha=0.7, zorder=2)
-
-    for idx in pareto_latency:
-        e = enriched[idx]
-        ax2.scatter(e["latency_ms"], e["val_accuracy"], marker="*", s=200,
-                    c=arch_colors[e["arch"]], edgecolors="black", linewidths=0.8, zorder=3)
-
-    if len(pareto_latency) > 1:
-        px = [enriched[i]["latency_ms"] for i in pareto_latency]
-        py = [enriched[i]["val_accuracy"] for i in pareto_latency]
-        ax2.plot(px, py, "k--", alpha=0.4, linewidth=1, zorder=1)
-
-    ax2.set_xlabel("Estimated Latency (ms) — Jetson TK1")
-    ax2.set_ylabel("Validation Accuracy")
-    ax2.set_title("Accuracy vs Latency")
-    ax2.legend(fontsize=9)
-    ax2.grid(True, alpha=0.3)
+    ax.set_xlabel("Model Size (KB)")
+    ax.set_ylabel("Validation Accuracy")
+    ax.set_title("Distillation Sweep: Accuracy vs Model Size")
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
     pareto_path = output_dir / "pareto.png"
@@ -235,7 +216,7 @@ def generate_report(config=None):
         is_pareto = i in pareto_size or i in pareto_latency
         pareto_mark = "*" if is_pareto else ""
         print(
-            f"{e['arch']:<14} {e['temperature']:>3} {e['alpha']:>5} "
+            f"{e['architecture']:<14} {e['temperature']:>3} {e['alpha']:>5} "
             f"{e['val_accuracy']:>6.3f} {e['size_kb']:>9.1f} "
             f"{e['latency_ms']:>12.4f} {e['flops']:>12,} {pareto_mark:>7}"
         )
@@ -244,13 +225,13 @@ def generate_report(config=None):
     print("\nPareto-optimal models (size):")
     for idx in pareto_size:
         e = enriched[idx]
-        print(f"  {e['arch']} T={e['temperature']} alpha={e['alpha']}: "
+        print(f"  {e['architecture']} T={e['temperature']} alpha={e['alpha']}: "
               f"acc={e['val_accuracy']:.3f}, size={e['size_kb']:.1f}KB")
 
     print("\nPareto-optimal models (latency):")
     for idx in pareto_latency:
         e = enriched[idx]
-        print(f"  {e['arch']} T={e['temperature']} alpha={e['alpha']}: "
+        print(f"  {e['architecture']} T={e['temperature']} alpha={e['alpha']}: "
               f"acc={e['val_accuracy']:.3f}, latency={e['latency_ms']:.4f}ms")
 
     print()

@@ -35,6 +35,7 @@ image = (
         "tqdm>=4.66",
         "matplotlib>=3.8",
         "onnxruntime>=1.17",
+        "onnxscript",
     )
     .add_local_dir("src", remote_path="/app/src")
     .add_local_dir(
@@ -42,10 +43,6 @@ image = (
         remote_path="/app/sleepfm-clinical/sleepfm",
     )
     .add_local_dir("data/processed", remote_path="/app/data/processed")
-    .add_local_dir(
-        "checkpoints/sleepfm-sleepEDF",
-        remote_path="/app/checkpoints/sleepfm-sleepEDF",
-    )
     .add_local_file("pyproject.toml", remote_path="/app/pyproject.toml")
 )
 
@@ -70,12 +67,28 @@ def run_pipeline():
     from loguru import logger
 
     # ------------------------------------------------------------------
+    # Step 0: Copy teacher checkpoint from Modal volume
+    # ------------------------------------------------------------------
+    teacher_vol = Path("/data/checkpoints/sleepfm-sleepEDF")
+    teacher_local = Path("/app/checkpoints/sleepfm-sleepEDF")
+    if teacher_vol.exists():
+        teacher_local.mkdir(parents=True, exist_ok=True)
+        for f in teacher_vol.iterdir():
+            if f.is_file():
+                shutil.copy2(f, teacher_local / f.name)
+        logger.info(f"Copied teacher checkpoint from volume: {list(teacher_local.glob('*'))}")
+    else:
+        logger.error("Teacher checkpoint not found on volume. Run modal_app.py first.")
+        return {"status": "error", "message": "No teacher checkpoint on volume"}
+
+    from src.distill.soft_labels import load_distill_config
+    config = load_distill_config()
+
+    # ------------------------------------------------------------------
     # Step 1: Generate soft labels from teacher
     # ------------------------------------------------------------------
     logger.info("=== Step 1: Generating soft labels ===")
-    from src.distill.soft_labels import generate_soft_labels, load_distill_config
-
-    config = load_distill_config()
+    from src.distill.soft_labels import generate_soft_labels
     generate_soft_labels(config)
     logger.info("Soft labels generated.")
 
@@ -84,8 +97,7 @@ def run_pipeline():
     # ------------------------------------------------------------------
     logger.info("=== Step 2: Running distillation sweep ===")
     from src.distill.train_distill import main as train_distill_main
-
-    sweep_results = train_distill_main()
+    train_distill_main()
     logger.info("Distillation sweep complete.")
 
     # ------------------------------------------------------------------
@@ -93,7 +105,6 @@ def run_pipeline():
     # ------------------------------------------------------------------
     logger.info("=== Step 3: Exporting best student ===")
     from src.distill.export import main as export_main
-
     export_main()
     logger.info("Export complete.")
 

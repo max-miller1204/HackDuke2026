@@ -29,6 +29,10 @@ students:
 embed_dim: 128
 num_classes: 5
 
+# Required by SleepEDFDataset (parent class of DistillSleepEDFDataset)
+model_params:
+  max_seq_length: 6000
+
 # Distillation sweep
 sweep:
   temperatures: [2, 4, 8]

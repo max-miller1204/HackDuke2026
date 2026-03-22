@@ -95,18 +95,32 @@ def generate_soft_labels(config=None, device=None):
         x_data = np.stack(x_data)  # (C, S, E)
 
         C, S, E = x_data.shape
+        max_seq = config["teacher"]["model_params"]["max_seq_length"]
 
-        # Build input tensor: (1, C, S, E)
-        x_tensor = torch.tensor(x_data, dtype=torch.float32).unsqueeze(0).to(device)
+        # Chunk long recordings to fit within teacher's positional encoding limit.
+        # Use 50% overlap and average logits in overlapping regions so the biLSTM
+        # still gets good context at chunk boundaries.
+        stride = max_seq // 2
+        all_logits = np.zeros((S, config["num_classes"]), dtype=np.float64)
+        counts = np.zeros(S, dtype=np.float64)
 
-        # Build mask: (1, C, S) — all real data, no padding
-        mask = torch.zeros(1, max_channels, S, device=device)
-
-        # Run teacher inference (no grad, full recording)
         with torch.no_grad(), torch.amp.autocast("cuda", enabled=device.type == "cuda"):
-            logits, _ = teacher(x_tensor, mask)  # (1, S, num_classes)
+            start = 0
+            while start < S:
+                end = min(start + max_seq, S)
+                chunk = torch.tensor(
+                    x_data[:, start:end, :], dtype=torch.float32
+                ).unsqueeze(0).to(device)
+                chunk_mask = torch.zeros(1, max_channels, end - start, device=device)
+                chunk_logits, _ = teacher(chunk, chunk_mask)
+                chunk_np = chunk_logits.squeeze(0).cpu().float().numpy()
+                all_logits[start:end] += chunk_np
+                counts[start:end] += 1.0
+                if end >= S:
+                    break
+                start += stride
 
-        logits_np = logits.squeeze(0).cpu().float().numpy()  # (S, num_classes)
+        logits_np = (all_logits / counts[:, None]).astype(np.float32)
         np.save(output_path, logits_np)
         logger.info(f"Cached teacher logits for {subject_id}: shape {logits_np.shape} → {output_path}")
 

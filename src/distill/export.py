@@ -30,7 +30,7 @@ def export_student(model, config, experiment_info, output_dir):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    arch = experiment_info["arch"]
+    arch = experiment_info.get("architecture", experiment_info.get("arch"))
     temp = experiment_info["temperature"]
     alpha = experiment_info["alpha"]
     base_name = f"{arch}_T{temp}_a{alpha}"
@@ -41,19 +41,31 @@ def export_student(model, config, experiment_info, output_dir):
     embed_dim = config["embed_dim"]
     model.eval()
 
+    # Wrap backbone in a standalone module for tracing/export
+    class BackboneWrapper(torch.nn.Module):
+        def __init__(self, student):
+            super().__init__()
+            self.student = student
+
+        def forward(self, x):
+            return self.student.backbone(x)
+
+    wrapper = BackboneWrapper(model)
+    wrapper.eval()
+
     # Dummy input for backbone: (B, S, E) — pre-pooled
     dummy_input = torch.randn(1, 120, embed_dim)
 
     # --- TorchScript export ---
     with torch.no_grad():
-        traced = torch.jit.trace(model.backbone, dummy_input)
+        traced = torch.jit.trace(wrapper, dummy_input)
     traced.save(str(ts_path))
     logger.info(f"TorchScript saved: {ts_path}")
 
     # --- ONNX export ---
     opset = config["export"]["onnx_opset"]
     torch.onnx.export(
-        model.backbone,
+        wrapper,
         dummy_input,
         str(onnx_path),
         opset_version=opset,
@@ -63,6 +75,7 @@ def export_student(model, config, experiment_info, output_dir):
             "input": {0: "batch", 1: "seq_len"},
             "logits": {0: "batch", 1: "seq_len"},
         },
+        dynamo=False,
     )
     logger.info(f"ONNX saved: {onnx_path} (opset {opset})")
 
@@ -128,14 +141,18 @@ def export_all(config=None):
         return
 
     with open(results_path) as f:
-        sweep_results = json.load(f)
+        sweep_data = json.load(f)
+
+    # sweep_results.json has a "results" key wrapping the experiment list
+    sweep_results = sweep_data["results"] if "results" in sweep_data else sweep_data
 
     logger.info(f"Exporting {len(sweep_results)} student models...")
     export_results = []
 
     for info in sweep_results:
-        arch = info["arch"]
-        checkpoint_path = project_root / info["checkpoint_path"]
+        arch = info["architecture"]
+        exp_id = info["experiment_id"]
+        checkpoint_path = output_dir / f"{exp_id}.pth"
 
         if not checkpoint_path.exists():
             logger.warning(f"Checkpoint missing: {checkpoint_path}, skipping")
