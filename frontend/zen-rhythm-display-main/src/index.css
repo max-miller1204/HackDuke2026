@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  :root {
+    --background: 216 30% 6%;
+    --foreground: 200 20% 85%;
+
+    --card: 216 18% 11%;
+    --card-foreground: 200 20% 85%;
+
+    --popover: 228 24% 10%;
+    --popover-foreground: 200 20% 85%;
+
+    --primary: 174 72% 52%;
+    --primary-foreground: 228 28% 6%;
+
+    --secondary: 232 20% 16%;
+    --secondary-foreground: 200 20% 75%;
+
+    --muted: 230 18% 14%;
+    --muted-foreground: 220 12% 48%;
+
+    --accent: 174 72% 52%;
+    --accent-foreground: 228 28% 6%;
+
+    --destructive: 0 68% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 9% 21%;
+    --input: 230 16% 18%;
+    --ring: 174 72% 52%;
+
+    --radius: 0.75rem;
+
+    /* Game-specific tokens */
+    --glow-cyan: 174 72% 52%;
+    --glow-teal: 168 80% 44%;
+    --storm-red: 0 68% 55%;
+    --storm-gray: 220 10% 30%;
+    --wave-indigo: 240 40% 18%;
+    --orb-perfect: 168 80% 44%;
+    --orb-offbeat: 0 68% 55%;
+
+    --sidebar-background: 228 24% 10%;
+    --sidebar-foreground: 200 20% 75%;
+    --sidebar-primary: 174 72% 52%;
+    --sidebar-primary-foreground: 228 28% 6%;
+    --sidebar-accent: 232 20% 16%;
+    --sidebar-accent-foreground: 200 20% 75%;
+    --sidebar-border: 230 16% 18%;
+    --sidebar-ring: 174 72% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.05rem;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      font-size: 1rem;
+    }
+  }
+}
+
+@layer utilities {
+  .font-mono-game {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
