@@ -135,8 +135,10 @@ def run_pipeline():
 
     # Build summary
     result = {"status": "success"}
-    if sweep_results is not None:
-        result["sweep"] = sweep_results
+    sweep_path = distill_ckpt / "sweep_results.json"
+    if sweep_path.exists():
+        with open(sweep_path) as f:
+            result["sweep"] = json.load(f)
 
     # Include report path if it exists
     report_path = distill_ckpt / "report.png"

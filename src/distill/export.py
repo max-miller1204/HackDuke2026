@@ -113,7 +113,7 @@ def _validate_onnx(model, onnx_path, embed_dim, config):
     ort_output = session.run(None, {"input": test_input.numpy()})[0]
 
     max_diff = np.max(np.abs(pt_output - ort_output))
-    passed = max_diff < atol
+    passed = bool(max_diff < atol)
 
     if passed:
         logger.info(f"  ONNX validation PASSED (max_diff={max_diff:.2e}, atol={atol})")
