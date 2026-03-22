@@ -1,0 +1,218 @@
+[
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T2_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T2_a0.3.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 2,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T2_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T2_a0.5.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 2,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T2_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T2_a0.7.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 2,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T4_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T4_a0.3.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 4,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T4_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T4_a0.5.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 4,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T4_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T4_a0.7.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 4,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T8_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T8_a0.3.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 8,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T8_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T8_a0.5.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 8,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/SmallGRU_T8_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/SmallGRU_T8_a0.7.pt",
+    "validation_passed": true,
+    "arch": "SmallGRU",
+    "temperature": 8,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.3.pt",
+    "validation_passed": false,
+    "arch": "Conv1dStack",
+    "temperature": 2,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.5.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 2,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T2_a0.7.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 2,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.3.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 4,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.5.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 4,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T4_a0.7.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 4,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.3.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 8,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.5.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 8,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/Conv1dStack_T8_a0.7.pt",
+    "validation_passed": true,
+    "arch": "Conv1dStack",
+    "temperature": 8,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.3.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 2,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.5.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 2,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T2_a0.7.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 2,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.3.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 4,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.5.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 4,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T4_a0.7.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 4,
+    "alpha": 0.7
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.3.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.3.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 8,
+    "alpha": 0.3
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.5.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.5.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 8,
+    "alpha": 0.5
+  },
+  {
+    "onnx_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.7.onnx",
+    "torchscript_path": "/app/checkpoints/distill/MLPPerPatch_T8_a0.7.pt",
+    "validation_passed": true,
+    "arch": "MLPPerPatch",
+    "temperature": 8,
+    "alpha": 0.7
+  }
+]
