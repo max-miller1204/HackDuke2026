@@ -95,7 +95,7 @@ def evaluate_model(model, loader, device):
             for b in range(preds.shape[0]):
                 valid = temporal_mask[b] == 0
                 all_preds.append(preds[b][valid].cpu().numpy())
-                all_labels.append(y_data[b][valid].long().cpu().numpy())
+                all_labels.append(y_data[b][valid.cpu()].long().numpy())
 
     return np.concatenate(all_preds), np.concatenate(all_labels)
 

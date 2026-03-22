@@ -15,8 +15,8 @@ model: "SleepEventLSTMClassifier"
 seed: 42
 
 # training
-batch_size: 1
-epochs: 20
+batch_size: 4
+epochs: 30
 lr: 0.0001
 num_workers: 4
 accumulation_steps: 1
@@ -33,7 +33,7 @@ epoch_duration_sec: 30
 num_classes: 5
 
 # class weights for masked_cross_entropy_loss: W, R, N1, N2, N3
-class_weights: [1.0, 4.0, 2.0, 4.0, 3.0]
+class_weights: [1.0, 2.0, 5.0, 2.0, 2.0]
 
 # stage mapping: annotation label -> integer class
 stage_mapping:
@@ -62,6 +62,13 @@ test_subjects: ["SC4021"]
 
 # channel config
 channel_like: ["BAS", "RESP", "EKG", "EMG"]
+
+# windowing (training only) — slice recordings into windows, oversample minority stages
+windowing:
+  window_epochs: 100       # 100 epochs = 50 min windows (600 patches)
+  stride_epochs: 50        # 50% overlap
+  oversample_factor: 3     # repeat minority-heavy windows 3x
+  minority_classes: [1, 2, 4]  # REM, N1, N3
 
 # augmentation (training only)
 augmentation:

@@ -147,6 +147,15 @@ def embed_modality_groups(
             arr = modality_tensors[group]  # (num_channels, total_samples)
             n_ch, total_samples = arr.shape
 
+            # Skip groups with no real channels (e.g. EKG in Sleep-EDF)
+            has_any_data = any(arr[ch].any() for ch in range(n_ch))
+            if not has_any_data:
+                num_patches = (total_samples // patch_size) * patch_size // patch_size
+                embed_dim = pretrained_model.patch_embedding.output_size
+                logger.info(f"Group {group}: no real channels, outputting zeros ({num_patches}, {embed_dim})")
+                embeddings[group] = np.zeros((num_patches, embed_dim), dtype=np.float32)
+                continue
+
             # Trim to multiple of patch_size
             usable_samples = (total_samples // patch_size) * patch_size
             if usable_samples == 0:
